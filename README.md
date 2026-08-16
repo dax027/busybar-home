@@ -72,6 +72,27 @@ If a scene reports that another BUSY app owns the display, close or release the 
 other computer, phone, or tablet and try again. Those clients can hold a higher-priority display
 session even though this dashboard and the device remain reachable.
 
+### Start automatically with Windows
+
+Install the per-user Windows startup shortcut once:
+
+```powershell
+.\install-startup.ps1
+```
+
+At future sign-ins, Windows starts the dashboard server in the background without opening a
+browser. Open the bookmarked [http://127.0.0.1:8765](http://127.0.0.1:8765) when you are ready to
+use it. The launcher checks the dashboard port first, so it does not start a duplicate server.
+Keep the official BUSY app closed on other devices if it competes for display ownership.
+
+To remove the startup shortcut:
+
+```powershell
+.\install-startup.ps1 -Remove
+```
+
+The foreground `start-busybar-home.ps1` launcher remains available for troubleshooting.
+
 ## Development commands
 
 ```shell
