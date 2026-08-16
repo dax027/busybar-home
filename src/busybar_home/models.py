@@ -10,6 +10,7 @@ class FrontStyle(StrEnum):
     TERMINAL = "terminal"
     CYBERPUNK = "cyberpunk"
     LOW_BATTERY = "low_battery"
+    DAYDREAM = "daydream"
 
 
 @dataclass(frozen=True, slots=True)

@@ -66,6 +66,7 @@ local and do not commit or share them casually.
 | Low social battery | Red low-battery glyph with `LOW SOCIAL` and `BATTERY` | `SOCIAL BATTERY` — Quiet mode. Recharge. |
 | Coding | Green `> CODING_` terminal prompt | `BUILD MODE` — Write. Run. Refine. |
 | Hacking | Cyan/magenta cyberpunk `HACKING` treatment | `CYBER OPS` — Map. Probe. Learn. |
+| Daydreaming | Sky-blue `DAYDREAMING` scene with white clouds | `WANDER MODE` — Let ideas drift. |
 
 The browser preview animates the Coding cursor and Hacking glitch accents. The physical Coding
 cursor remains static because `busylib` 1.x does not currently convert animation assets; the app

@@ -105,6 +105,19 @@ SCENE_PRESETS = (
             FrontStyle.CYBERPUNK,
         ),
     ),
+    ScenePreset(
+        id="daydreaming",
+        label="Daydreaming",
+        description="A soft sky-and-cloud signal for letting ideas wander.",
+        scene=DisplayScene.from_text(
+            "Daydreaming",
+            "DAYDREAMING",
+            "WANDER MODE",
+            "#69C6FF",
+            "Let ideas drift.",
+            FrontStyle.DAYDREAM,
+        ),
+    ),
 )
 
 

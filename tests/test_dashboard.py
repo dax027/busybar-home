@@ -66,3 +66,16 @@ def test_low_social_battery_scene_exposes_battery_style_and_private_cue() -> Non
     assert preset["front_style"] == "low_battery"
     assert preset["back"]["text"] == "SOCIAL BATTERY"
     assert preset["rear_cue"] == "Quiet mode. Recharge."
+
+
+def test_daydreaming_scene_exposes_sky_style_and_personal_cue() -> None:
+    controller = DashboardController(FakeDeviceClient())
+
+    state, _snapshot = controller.activate("daydreaming")
+    preset = next(item for item in state["presets"] if item["id"] == "daydreaming")
+
+    assert preset["front"]["text"] == "DAYDREAMING"
+    assert preset["front"]["color"] == "#69C6FF"
+    assert preset["front_style"] == "daydream"
+    assert preset["back"]["text"] == "WANDER MODE"
+    assert preset["rear_cue"] == "Let ideas drift."

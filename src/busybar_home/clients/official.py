@@ -132,6 +132,55 @@ class OfficialBusyBarClient:
                     display=types.DisplayName.FRONT,
                 ),
             ]
+        elif scene.front_style is FrontStyle.DAYDREAM:
+            cloud_rectangles = (
+                ("cloud-left-base", 1, 11, 16, 3),
+                ("cloud-left-rise", 4, 9, 6, 5),
+                ("cloud-left-mid", 9, 10, 5, 4),
+                ("cloud-right-base", 55, 3, 16, 3),
+                ("cloud-right-rise", 61, 1, 6, 5),
+                ("cloud-right-mid", 57, 2, 6, 4),
+            )
+            front_elements = [
+                types.RectangleElement(
+                    id="status-background",
+                    type="rectangle",
+                    x=0,
+                    y=0,
+                    width=72,
+                    height=16,
+                    fill="solid",
+                    fill_colors=[scene.front.color],
+                    border_width=0,
+                    display=types.DisplayName.FRONT,
+                ),
+                *[
+                    types.RectangleElement(
+                        id=element_id,
+                        type="rectangle",
+                        x=x,
+                        y=y,
+                        width=width,
+                        height=height,
+                        fill="solid",
+                        fill_colors=["#FFFFFF"],
+                        border_width=0,
+                        display=types.DisplayName.FRONT,
+                    )
+                    for element_id, x, y, width, height in cloud_rectangles
+                ],
+                types.TextElement(
+                    id="status",
+                    type="text",
+                    x=36,
+                    y=8,
+                    align="center",
+                    text=scene.front.text,
+                    font="normal",
+                    color="#183B63",
+                    display=types.DisplayName.FRONT,
+                ),
+            ]
         elif scene.front_style is FrontStyle.TERMINAL:
             front_elements = [
                 types.RectangleElement(

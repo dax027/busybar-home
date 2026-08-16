@@ -205,3 +205,31 @@ def test_official_adapter_renders_low_social_battery_glyph() -> None:
     assert elements["status-battery"].text == "BATTERY"
     assert elements["status-battery"].color == "#FFFFFFFF"
     assert (elements["status-battery"].x, elements["status-battery"].y) == (24, 12)
+
+
+def test_official_adapter_renders_daydreaming_sky_and_clouds() -> None:
+    from busybar_home.models import FrontStyle
+
+    sdk_client = RecordingSdkClient()
+    client = OfficialBusyBarClient.__new__(OfficialBusyBarClient)
+    client._client = sdk_client
+    client._display_priority = 100
+    scene = DisplayScene.from_text(
+        "Daydreaming",
+        "DAYDREAMING",
+        "WANDER MODE",
+        "#69C6FF",
+        "Let ideas drift.",
+        FrontStyle.DAYDREAM,
+    )
+
+    client.show_scene(scene)
+
+    elements = {element.id: element for element in sdk_client.draw_calls[0].elements}
+    assert elements["status-background"].fill_colors == ["#69C6FFFF"]
+    assert elements["status"].text == "DAYDREAMING"
+    assert elements["status"].font == "normal"
+    assert elements["status"].color == "#183B63FF"
+    cloud_ids = [element_id for element_id in elements if element_id.startswith("cloud-")]
+    assert len(cloud_ids) == 6
+    assert all(elements[element_id].fill_colors == ["#FFFFFFFF"] for element_id in cloud_ids)

@@ -74,6 +74,7 @@ function setPreview(preset) {
   stage.classList.toggle("terminal-scene", preset.front_style === "terminal");
   stage.classList.toggle("cyberpunk-scene", preset.front_style === "cyberpunk");
   stage.classList.toggle("low-battery-scene", preset.front_style === "low_battery");
+  stage.classList.toggle("daydream-scene", preset.front_style === "daydream");
   frontPreview.replaceChildren();
   if (preset.front_style === "terminal") {
     frontPreview.append(document.createTextNode(`> ${preset.front.text}`));
@@ -95,6 +96,17 @@ function setPreview(preset) {
     subLabel.textContent = "BATTERY";
     copy.append(label, subLabel);
     frontPreview.append(battery, copy);
+  } else if (preset.front_style === "daydream") {
+    const leftCloud = document.createElement("span");
+    leftCloud.className = "daydream-cloud daydream-cloud-left";
+    leftCloud.setAttribute("aria-hidden", "true");
+    const label = document.createElement("span");
+    label.className = "daydream-label";
+    label.textContent = preset.front.text;
+    const rightCloud = document.createElement("span");
+    rightCloud.className = "daydream-cloud daydream-cloud-right";
+    rightCloud.setAttribute("aria-hidden", "true");
+    frontPreview.append(leftCloud, label, rightCloud);
   } else {
     frontPreview.textContent = preset.front.text;
   }
@@ -116,6 +128,7 @@ function render(state) {
     card.classList.toggle("terminal-scene", preset.front_style === "terminal");
     card.classList.toggle("cyberpunk-scene", preset.front_style === "cyberpunk");
     card.classList.toggle("low-battery-scene", preset.front_style === "low_battery");
+    card.classList.toggle("daydream-scene", preset.front_style === "daydream");
     card.classList.toggle("active", preset.id === state.active_preset);
     card.style.setProperty("--card-color", preset.front.color);
     card.setAttribute("aria-pressed", String(preset.id === state.active_preset));
@@ -123,6 +136,8 @@ function render(state) {
       ? `&gt; ${preset.front.text}<span class="front-cursor">_</span>`
       : preset.front_style === "low_battery"
         ? `<span class="battery-glyph" aria-hidden="true"></span><span class="battery-copy"><span class="battery-label">${preset.front.text}</span><span class="battery-sub-label">BATTERY</span></span>`
+      : preset.front_style === "daydream"
+        ? `<span class="daydream-cloud daydream-cloud-left" aria-hidden="true"></span><span class="daydream-label">${preset.front.text}</span><span class="daydream-cloud daydream-cloud-right" aria-hidden="true"></span>`
       : preset.front.text;
     card.innerHTML = `
       <span class="card-display">${frontText}</span>
