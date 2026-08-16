@@ -54,3 +54,15 @@ def test_hacking_scene_exposes_cyberpunk_style_and_personal_cue() -> None:
     assert hacking["front"]["text"] == "HACKING"
     assert hacking["front_style"] == "cyberpunk"
     assert hacking["rear_cue"] == "Map. Probe. Learn."
+
+
+def test_low_social_battery_scene_exposes_battery_style_and_private_cue() -> None:
+    controller = DashboardController(FakeDeviceClient())
+
+    state, _snapshot = controller.activate("low-social-battery")
+    preset = next(item for item in state["presets"] if item["id"] == "low-social-battery")
+
+    assert preset["front"]["text"] == "LOW SOCIAL"
+    assert preset["front_style"] == "low_battery"
+    assert preset["back"]["text"] == "SOCIAL BATTERY"
+    assert preset["rear_cue"] == "Quiet mode. Recharge."

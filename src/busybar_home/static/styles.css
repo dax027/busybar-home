@@ -177,6 +177,62 @@ h1 span { color: #8d9187; }
 
 @keyframes cursor-blink { 0%, 48% { opacity: 1; } 49%, 100% { opacity: 0; } }
 
+.low-battery-scene .front-display,
+.scene-card.low-battery-scene .card-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8%;
+  background-color: #030303;
+  color: #f7f7f2;
+  text-shadow: none;
+}
+
+.battery-glyph {
+  position: relative;
+  width: 22%;
+  max-width: 44px;
+  aspect-ratio: 1.6 / 1;
+  border: 2px solid #f7f7f2;
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(255, 77, 77, .16);
+}
+
+.battery-glyph::before {
+  content: "";
+  position: absolute;
+  inset: 16% auto 16% 9%;
+  width: 19%;
+  background: #ff4d4d;
+  box-shadow: 0 0 7px rgba(255, 77, 77, .8);
+}
+
+.battery-glyph::after {
+  content: "";
+  position: absolute;
+  top: 29%;
+  left: calc(100% + 2px);
+  width: 4px;
+  height: 42%;
+  border-radius: 0 2px 2px 0;
+  background: #f7f7f2;
+}
+
+.battery-copy {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: clamp(1px, .25vw, 3px);
+  transform: translateY(-2px);
+  white-space: nowrap;
+}
+
+.battery-label,
+.battery-sub-label {
+  font: 700 clamp(7px, 1.05vw, 12px)/1 "DM Mono", monospace;
+  letter-spacing: .04em;
+}
+
 .cyberpunk-scene .front-display,
 .scene-card.cyberpunk-scene .card-display {
   position: relative;

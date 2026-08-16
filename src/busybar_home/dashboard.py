@@ -67,6 +67,19 @@ SCENE_PRESETS = (
         ),
     ),
     ScenePreset(
+        id="low-social-battery",
+        label="Low social battery",
+        description="Signal that your people-energy needs time to recharge.",
+        scene=DisplayScene.from_text(
+            "Low social battery",
+            "LOW SOCIAL",
+            "SOCIAL BATTERY",
+            "#FF4D4D",
+            "Quiet mode. Recharge.",
+            FrontStyle.LOW_BATTERY,
+        ),
+    ),
+    ScenePreset(
         id="coding",
         label="Coding",
         description="Drop into a focused build-and-debug loop.",

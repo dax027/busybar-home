@@ -19,6 +19,7 @@ function showToast(message) {
 function setPreview(preset) {
   stage.classList.toggle("terminal-scene", preset.front_style === "terminal");
   stage.classList.toggle("cyberpunk-scene", preset.front_style === "cyberpunk");
+  stage.classList.toggle("low-battery-scene", preset.front_style === "low_battery");
   frontPreview.replaceChildren();
   if (preset.front_style === "terminal") {
     frontPreview.append(document.createTextNode(`> ${preset.front.text}`));
@@ -26,6 +27,20 @@ function setPreview(preset) {
     cursor.className = "front-cursor";
     cursor.textContent = "_";
     frontPreview.append(cursor);
+  } else if (preset.front_style === "low_battery") {
+    const battery = document.createElement("span");
+    battery.className = "battery-glyph";
+    battery.setAttribute("aria-hidden", "true");
+    const copy = document.createElement("span");
+    copy.className = "battery-copy";
+    const label = document.createElement("span");
+    label.className = "battery-label";
+    label.textContent = preset.front.text;
+    const subLabel = document.createElement("span");
+    subLabel.className = "battery-sub-label";
+    subLabel.textContent = "BATTERY";
+    copy.append(label, subLabel);
+    frontPreview.append(battery, copy);
   } else {
     frontPreview.textContent = preset.front.text;
   }
@@ -45,11 +60,14 @@ function render(state) {
     card.className = "scene-card";
     card.classList.toggle("terminal-scene", preset.front_style === "terminal");
     card.classList.toggle("cyberpunk-scene", preset.front_style === "cyberpunk");
+    card.classList.toggle("low-battery-scene", preset.front_style === "low_battery");
     card.classList.toggle("active", preset.id === state.active_preset);
     card.style.setProperty("--card-color", preset.front.color);
     card.setAttribute("aria-pressed", String(preset.id === state.active_preset));
     const frontText = preset.front_style === "terminal"
       ? `&gt; ${preset.front.text}<span class="front-cursor">_</span>`
+      : preset.front_style === "low_battery"
+        ? `<span class="battery-glyph" aria-hidden="true"></span><span class="battery-copy"><span class="battery-label">${preset.front.text}</span><span class="battery-sub-label">BATTERY</span></span>`
       : preset.front.text;
     card.innerHTML = `
       <span class="card-display">${frontText}</span>

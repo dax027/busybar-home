@@ -48,6 +48,7 @@ selections in memory and performs no network I/O.
 | In a meeting | `ON A CALL` | `MEETING MODE` — Capture decisions. |
 | Available | `FREE` | `RESET WINDOW` — Clear quick replies. |
 | Stepped away | `AWAY` | `PAUSE` — Reset when I return. |
+| Low social battery | Red low-battery glyph with `LOW SOCIAL` | `SOCIAL BATTERY` — Quiet mode. Recharge. |
 | Coding | Green `> CODING_` terminal prompt | `BUILD MODE` — Write. Run. Refine. |
 | Hacking | Cyan/magenta cyberpunk `HACKING` treatment | `CYBER OPS` — Map. Probe. Learn. |
 

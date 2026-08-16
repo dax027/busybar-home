@@ -32,7 +32,80 @@ class OfficialBusyBarClient:
     def show_scene(self, scene: DisplayScene) -> None:
         from busylib import exceptions, types
 
-        if scene.front_style is FrontStyle.TERMINAL:
+        if scene.front_style is FrontStyle.LOW_BATTERY:
+            front_elements = [
+                types.RectangleElement(
+                    id="status-background",
+                    type="rectangle",
+                    x=0,
+                    y=0,
+                    width=72,
+                    height=16,
+                    fill="solid",
+                    fill_colors=["#000000"],
+                    border_width=0,
+                    display=types.DisplayName.FRONT,
+                ),
+                types.RectangleElement(
+                    id="battery-outline",
+                    type="rectangle",
+                    x=3,
+                    y=3,
+                    width=16,
+                    height=10,
+                    fill="none",
+                    border_width=1,
+                    border_color="#FFFFFF",
+                    display=types.DisplayName.FRONT,
+                ),
+                types.RectangleElement(
+                    id="battery-level",
+                    type="rectangle",
+                    x=5,
+                    y=5,
+                    width=3,
+                    height=6,
+                    fill="solid",
+                    fill_colors=[scene.front.color],
+                    border_width=0,
+                    display=types.DisplayName.FRONT,
+                ),
+                types.RectangleElement(
+                    id="battery-cap",
+                    type="rectangle",
+                    x=19,
+                    y=6,
+                    width=2,
+                    height=4,
+                    fill="solid",
+                    fill_colors=["#FFFFFF"],
+                    border_width=0,
+                    display=types.DisplayName.FRONT,
+                ),
+                types.TextElement(
+                    id="status",
+                    type="text",
+                    x=24,
+                    y=6,
+                    align="mid_left",
+                    text=scene.front.text,
+                    font="tiny",
+                    color="#FFFFFF",
+                    display=types.DisplayName.FRONT,
+                ),
+                types.TextElement(
+                    id="status-battery",
+                    type="text",
+                    x=24,
+                    y=12,
+                    align="mid_left",
+                    text="BATTERY",
+                    font="tiny",
+                    color="#FFFFFF",
+                    display=types.DisplayName.FRONT,
+                ),
+            ]
+        elif scene.front_style is FrontStyle.TERMINAL:
             front_elements = [
                 types.RectangleElement(
                     id="status-background",
