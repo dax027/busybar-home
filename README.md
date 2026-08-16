@@ -48,7 +48,9 @@ Open [http://127.0.0.1:8765/logs](http://127.0.0.1:8765/logs) for device diagnos
 captured automatically. Selecting **Capture device log** snapshots the BUSY Bar's in-memory log
 buffer to its fixed default `/ext/log.txt`, downloads it through the official storage API, and
 shows it locally. Repeated captures overwrite that same dump path; the app does not delete other
-device files. Display is capped at the newest 512 KiB.
+device files. Display is capped at the newest 512 KiB. Device-log capture requires BUSY Bar API
+25.0.0 or newer. Raw diagnostics may contain internal device or network details; keep captures
+local and do not commit or share them casually.
 
 ### Included scenes
 
@@ -58,7 +60,7 @@ device files. Display is capped at the newest 512 KiB.
 | In a meeting | `ON A CALL` | `MEETING MODE` — Capture decisions. |
 | Available | `FREE` | `RESET WINDOW` — Clear quick replies. |
 | Stepped away | `AWAY` | `PAUSE` — Reset when I return. |
-| Low social battery | Red low-battery glyph with `LOW SOCIAL` | `SOCIAL BATTERY` — Quiet mode. Recharge. |
+| Low social battery | Red low-battery glyph with `LOW SOCIAL` and `BATTERY` | `SOCIAL BATTERY` — Quiet mode. Recharge. |
 | Coding | Green `> CODING_` terminal prompt | `BUILD MODE` — Write. Run. Refine. |
 | Hacking | Cyan/magenta cyberpunk `HACKING` treatment | `CYBER OPS` — Map. Probe. Learn. |
 
@@ -158,8 +160,10 @@ tests/                  # hardware-free unit tests
 
 ## SDK notes
 
-The adapter targets `busylib` 1.x and uses `version()`, `display_draw(...)`, native text elements,
-and native rectangle elements. It clears the existing Canvas layer before applying a scene and
-uses configurable display priority so the dashboard can take ownership cleanly. BUSY Bar firmware
-and SDK contracts can change. Keep SDK-specific types and method calls inside
-`clients/official.py`; application code should depend only on `DeviceClient`.
+The adapter targets `busylib` 1.x. Scene rendering uses `display_draw(...)` with native text and
+rectangle elements. Device health uses `name()`, `status_power()`, `status_firmware()`, and
+`status_system()`. Manual diagnostics use `log_dump()` followed by `storage_read()`. The adapter
+clears the existing Canvas layer before applying a scene and uses configurable display priority so
+the dashboard can take ownership cleanly. BUSY Bar firmware and SDK contracts can change. Keep
+SDK-specific types and method calls inside `clients/official.py`; application code should depend
+only on `DeviceClient`.
