@@ -51,9 +51,27 @@ def create_web_app(
     def index() -> FileResponse:
         return FileResponse(STATIC_DIR / "index.html")
 
+    @app.get("/logs", include_in_schema=False)
+    def logs_page() -> FileResponse:
+        return FileResponse(STATIC_DIR / "logs.html")
+
     @app.get("/api/dashboard")
     def dashboard_state() -> dict[str, object]:
         return controller.state()
+
+    @app.get("/api/device/status")
+    def device_status() -> dict[str, object]:
+        try:
+            return asdict(controller.device_status())
+        except Exception as error:
+            raise HTTPException(status_code=502, detail="Device status unavailable") from error
+
+    @app.post("/api/device/logs/capture")
+    def capture_device_logs() -> dict[str, object]:
+        try:
+            return asdict(controller.capture_device_logs())
+        except Exception as error:
+            raise HTTPException(status_code=502, detail="Device log capture failed") from error
 
     @app.post("/api/presets/{preset_id}/activate")
     def activate_preset(preset_id: str) -> dict[str, object]:

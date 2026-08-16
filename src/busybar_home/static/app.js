@@ -5,15 +5,69 @@ const backPreview = document.querySelector("#back-preview");
 const backCue = document.querySelector("#back-cue");
 const previewScene = document.querySelector("#preview-scene");
 const deviceMode = document.querySelector("#device-mode");
+const connectionPill = document.querySelector("#connection-pill");
 const toast = document.querySelector("#toast");
+const refreshStatusButton = document.querySelector("#refresh-status");
+const deviceName = document.querySelector("#device-name");
+const statusBattery = document.querySelector("#status-battery");
+const statusPower = document.querySelector("#status-power");
+const statusFirmware = document.querySelector("#status-firmware");
+const statusApi = document.querySelector("#status-api");
+const statusUptime = document.querySelector("#status-uptime");
+const statusNote = document.querySelector("#status-note");
+const batteryMeterLevel = document.querySelector("#battery-meter-level");
 
 let toastTimer = null;
+let deviceLabel = "BUSY Bar";
 
 function showToast(message) {
   toast.textContent = message;
   toast.classList.add("visible");
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => toast.classList.remove("visible"), 2200);
+}
+
+function displayValue(value) {
+  return value === null || value === undefined || value === "" ? "Unavailable" : String(value);
+}
+
+function titleCase(value) {
+  const text = displayValue(value);
+  return text === "Unavailable" ? text : text.replaceAll("_", " ").replace(/^./, (letter) => letter.toUpperCase());
+}
+
+function renderDeviceStatus(status) {
+  connectionPill.classList.toggle("is-offline", !status.connected);
+  const connectionLabel = `${deviceLabel} ${status.connected ? "online" : "offline"}`;
+  deviceMode.textContent = connectionLabel;
+  connectionPill.setAttribute("aria-label", connectionLabel);
+  deviceName.textContent = displayValue(status.device_name);
+  statusBattery.textContent = status.battery_percent === null ? "Unavailable" : `${status.battery_percent}%`;
+  statusPower.textContent = titleCase(status.power_state);
+  statusFirmware.textContent = displayValue(status.firmware_version);
+  statusApi.textContent = displayValue(status.api_version);
+  statusUptime.textContent = displayValue(status.uptime);
+  const batteryLevel = status.battery_percent ?? 0;
+  batteryMeterLevel.style.width = `${Math.max(0, Math.min(100, batteryLevel))}%`;
+  statusNote.textContent = "Updated just now · Status refreshes only when requested.";
+}
+
+async function refreshDeviceStatus() {
+  refreshStatusButton.disabled = true;
+  statusNote.textContent = "Reading device status…";
+  try {
+    const response = await fetch("/api/device/status");
+    if (!response.ok) throw new Error("Device status unavailable");
+    renderDeviceStatus(await response.json());
+  } catch (error) {
+    connectionPill.classList.add("is-offline");
+    deviceMode.textContent = `${deviceLabel} offline`;
+    connectionPill.setAttribute("aria-label", `${deviceLabel} offline`);
+    statusNote.textContent = "Could not read device status. Try again when the BUSY Bar is available.";
+    showToast(error.message || "Could not read device status");
+  } finally {
+    refreshStatusButton.disabled = false;
+  }
 }
 
 function setPreview(preset) {
@@ -51,7 +105,8 @@ function setPreview(preset) {
 }
 
 function render(state) {
-  deviceMode.textContent = state.device_mode === "fake" ? "Demo device" : "BUSY Bar";
+  deviceLabel = state.device_mode === "fake" ? "Demo" : "BUSY Bar";
+  deviceMode.textContent = `${deviceLabel} device`;
   grid.replaceChildren();
 
   state.presets.forEach((preset) => {
@@ -109,7 +164,10 @@ fetch("/api/dashboard")
     return response.json();
   })
   .then(render)
+  .then(refreshDeviceStatus)
   .catch(() => {
     deviceMode.textContent = "Offline";
     showToast("Dashboard could not load");
   });
+
+refreshStatusButton.addEventListener("click", refreshDeviceStatus);

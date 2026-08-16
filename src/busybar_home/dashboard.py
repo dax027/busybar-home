@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from threading import Lock
 
 from busybar_home.client import DeviceClient
-from busybar_home.models import DeviceSnapshot, DisplayScene, FrontStyle
+from busybar_home.models import DeviceLog, DeviceSnapshot, DisplayScene, FrontStyle
 
 
 @dataclass(frozen=True, slots=True)
@@ -111,7 +111,12 @@ SCENE_PRESETS = (
 class DashboardController:
     """Thread-safe local state around one device client."""
 
-    def __init__(self, client: DeviceClient, *, device_mode: str = "fake") -> None:
+    def __init__(
+        self,
+        client: DeviceClient,
+        *,
+        device_mode: str = "fake",
+    ) -> None:
         self._client = client
         self._device_mode = device_mode
         self._dynamic_enabled = False
@@ -131,6 +136,14 @@ class DashboardController:
             snapshot = self._client.snapshot()
             self._active_preset = preset.id
             return self._state_unlocked(), snapshot
+
+    def device_status(self) -> DeviceSnapshot:
+        with self._lock:
+            return self._client.snapshot()
+
+    def capture_device_logs(self) -> DeviceLog:
+        with self._lock:
+            return self._client.capture_logs()
 
     def set_dynamic(self, enabled: bool) -> dict[str, object]:
         with self._lock:

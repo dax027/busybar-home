@@ -16,9 +16,12 @@
         <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
         <span>BUSY / HOME</span>
       </a>
-      <div class="connection-pill" id="connection-pill">
-        <span class="status-dot"></span>
-        <span id="device-mode">Loading</span>
+      <div class="header-actions">
+        <a class="nav-link" href="/logs">Device logs</a>
+        <div class="connection-pill" id="connection-pill">
+          <span class="status-dot"></span>
+          <span id="device-mode">Loading</span>
+        </div>
       </div>
     </header>
 
@@ -51,6 +54,40 @@
             <span><i class="back-key"></i>Rear · 160×80</span>
           </div>
         </div>
+      </section>
+
+      <section class="device-status-panel" aria-labelledby="device-status-heading">
+        <div class="status-heading">
+          <div>
+            <p class="eyebrow">Device health</p>
+            <h2 id="device-status-heading">Status for <span id="device-name">BUSY Bar</span></h2>
+          </div>
+          <button class="refresh-button" type="button" id="refresh-status">Refresh status</button>
+        </div>
+        <div class="status-grid" id="device-status" aria-live="polite">
+          <article class="status-card battery-status-card">
+            <span>Battery</span>
+            <strong id="status-battery">—</strong>
+            <div class="battery-meter" aria-hidden="true"><i id="battery-meter-level"></i></div>
+          </article>
+          <article class="status-card">
+            <span>Power</span>
+            <strong id="status-power">—</strong>
+          </article>
+          <article class="status-card">
+            <span>Firmware</span>
+            <strong id="status-firmware">—</strong>
+          </article>
+          <article class="status-card">
+            <span>API</span>
+            <strong id="status-api">—</strong>
+          </article>
+          <article class="status-card">
+            <span>Uptime</span>
+            <strong id="status-uptime">—</strong>
+          </article>
+        </div>
+        <p class="status-note" id="status-note">Loading device status…</p>
       </section>
 
       <section class="scenes-section" aria-labelledby="scenes-heading">

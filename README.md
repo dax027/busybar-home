@@ -40,6 +40,16 @@ Then open [http://127.0.0.1:8765](http://127.0.0.1:8765). The dashboard previews
 front and rear displays and offers one-click scene presets. The default fake client records
 selections in memory and performs no network I/O.
 
+The main page also shows device name, battery level, power state, firmware, API version, and
+uptime. Status is read once when the page loads and only again when **Refresh status** is selected;
+the app does not continuously poll the device.
+
+Open [http://127.0.0.1:8765/logs](http://127.0.0.1:8765/logs) for device diagnostics. Nothing is
+captured automatically. Selecting **Capture device log** snapshots the BUSY Bar's in-memory log
+buffer to its fixed default `/ext/log.txt`, downloads it through the official storage API, and
+shows it locally. Repeated captures overwrite that same dump path; the app does not delete other
+device files. Display is capped at the newest 512 KiB.
+
 ### Included scenes
 
 | Scene | Public front display | Private rear cue |

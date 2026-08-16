@@ -7,7 +7,9 @@ and calling its methods may communicate with a physical BUSY Bar.
 from typing import Any
 
 from busybar_home.client import DisplayOwnershipError
-from busybar_home.models import DeviceSnapshot, DisplayScene, FrontStyle
+from busybar_home.models import DeviceLog, DeviceSnapshot, DisplayScene, FrontStyle
+
+MAX_LOG_BYTES = 512 * 1024
 
 
 class OfficialBusyBarClient:
@@ -26,8 +28,33 @@ class OfficialBusyBarClient:
         self._display_priority = display_priority
 
     def snapshot(self) -> DeviceSnapshot:
-        version = self._client.version()
-        return DeviceSnapshot(connected=True, firmware_version=str(version.version))
+        name = self._client.name()
+        power = self._client.status_power()
+        firmware = self._client.status_firmware()
+        system = self._client.status_system()
+        return DeviceSnapshot(
+            connected=True,
+            firmware_version=firmware.version,
+            device_name=name.name,
+            battery_percent=power.battery_charge,
+            power_state=str(power.state) if power.state is not None else None,
+            api_version=system.api_semver,
+            uptime=system.uptime,
+        )
+
+    def capture_logs(self) -> DeviceLog:
+        dump = self._client.log_dump()
+        path = dump.path or "/ext/log.txt"
+        payload = self._client.storage_read(path)
+        size_bytes = len(payload)
+        truncated = size_bytes > MAX_LOG_BYTES
+        visible_payload = payload[-MAX_LOG_BYTES:] if truncated else payload
+        return DeviceLog(
+            path=path,
+            content=visible_payload.decode("utf-8", errors="replace"),
+            size_bytes=size_bytes,
+            truncated=truncated,
+        )
 
     def show_scene(self, scene: DisplayScene) -> None:
         from busylib import exceptions, types

@@ -80,3 +80,18 @@ class DeviceSnapshot:
 
     connected: bool
     firmware_version: str | None = None
+    device_name: str | None = None
+    battery_percent: int | None = None
+    power_state: str | None = None
+    api_version: str | None = None
+    uptime: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class DeviceLog:
+    """One bounded diagnostic log captured from device storage."""
+
+    path: str
+    content: str
+    size_bytes: int
+    truncated: bool = False

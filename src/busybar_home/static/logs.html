@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#11130f" />
+    <title>Device Logs · BUSY Bar Home</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+    <script src="/static/logs.js" defer></script>
+  </head>
+  <body>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="BUSY Bar Home">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>BUSY / HOME</span>
+      </a>
+      <div class="header-actions">
+        <a class="nav-link active" href="/logs" aria-current="page">Device logs</a>
+        <a class="nav-link" href="/">Dashboard</a>
+      </div>
+    </header>
+
+    <main class="logs-main">
+      <section class="logs-hero">
+        <div>
+          <p class="eyebrow">Device diagnostics</p>
+          <h1>Device<br /><span>logs.</span></h1>
+          <p class="intro">
+            Capture the BUSY Bar’s current in-memory diagnostic buffer and inspect it locally.
+          </p>
+        </div>
+        <button class="refresh-button" type="button" id="capture-logs">Capture device log</button>
+      </section>
+
+      <section class="log-panel" aria-labelledby="log-heading" aria-live="polite">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Manual capture</p>
+            <h2 id="log-heading">Diagnostic output</h2>
+          </div>
+          <p id="log-metadata">No device log captured yet.</p>
+        </div>
+        <div class="device-log-empty" id="log-empty">
+          Nothing is requested automatically. Capture a log when you need to troubleshoot the device.
+        </div>
+        <pre class="device-log-output" id="device-log" hidden></pre>
+        <p class="device-log-note">
+          Each capture overwrites the device’s default <code>/ext/log.txt</code> dump and does not delete other storage files.
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

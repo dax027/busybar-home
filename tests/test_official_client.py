@@ -1,6 +1,7 @@
+from types import SimpleNamespace
 from typing import Any
 
-from busybar_home.clients.official import OfficialBusyBarClient
+from busybar_home.clients.official import MAX_LOG_BYTES, OfficialBusyBarClient
 from busybar_home.models import DisplayScene
 
 
@@ -12,6 +13,81 @@ class RecordingSdkClient:
     def display_draw(self, payload: Any, *, clear_before_draw: bool = False) -> None:
         self.draw_calls.append(payload)
         self.clear_before_draw.append(clear_before_draw)
+
+
+class RecordingStatusSdkClient:
+    def __init__(self) -> None:
+        self.calls: list[str] = []
+
+    def name(self) -> SimpleNamespace:
+        self.calls.append("name")
+        return SimpleNamespace(name="Office BUSY Bar")
+
+    def status_power(self) -> SimpleNamespace:
+        self.calls.append("status_power")
+        return SimpleNamespace(battery_charge=73, state="charging")
+
+    def status_firmware(self) -> SimpleNamespace:
+        self.calls.append("status_firmware")
+        return SimpleNamespace(version="1.2.3")
+
+    def status_system(self) -> SimpleNamespace:
+        self.calls.append("status_system")
+        return SimpleNamespace(api_semver="25.0.0", uptime="01d 02h 03m 04s")
+
+
+class RecordingLogSdkClient:
+    def __init__(self, payload: bytes) -> None:
+        self.payload = payload
+        self.calls: list[tuple[str, str | None]] = []
+
+    def log_dump(self) -> SimpleNamespace:
+        self.calls.append(("log_dump", None))
+        return SimpleNamespace(path="/ext/log.txt")
+
+    def storage_read(self, path: str) -> bytes:
+        self.calls.append(("storage_read", path))
+        return self.payload
+
+
+def test_official_adapter_reads_bounded_device_status_fields() -> None:
+    sdk_client = RecordingStatusSdkClient()
+    client = OfficialBusyBarClient.__new__(OfficialBusyBarClient)
+    client._client = sdk_client
+
+    snapshot = client.snapshot()
+
+    assert snapshot.connected is True
+    assert snapshot.device_name == "Office BUSY Bar"
+    assert snapshot.battery_percent == 73
+    assert snapshot.power_state == "charging"
+    assert snapshot.firmware_version == "1.2.3"
+    assert snapshot.api_version == "25.0.0"
+    assert snapshot.uptime == "01d 02h 03m 04s"
+    assert sdk_client.calls == [
+        "name",
+        "status_power",
+        "status_firmware",
+        "status_system",
+    ]
+
+
+def test_official_adapter_captures_default_device_log_with_size_limit() -> None:
+    payload = b"old-prefix" + (b"x" * MAX_LOG_BYTES)
+    sdk_client = RecordingLogSdkClient(payload)
+    client = OfficialBusyBarClient.__new__(OfficialBusyBarClient)
+    client._client = sdk_client
+
+    log = client.capture_logs()
+
+    assert log.path == "/ext/log.txt"
+    assert log.size_bytes == len(payload)
+    assert log.truncated is True
+    assert log.content == "x" * MAX_LOG_BYTES
+    assert sdk_client.calls == [
+        ("log_dump", None),
+        ("storage_read", "/ext/log.txt"),
+    ]
 
 
 def test_official_adapter_draws_both_displays_at_work_session_priority() -> None:

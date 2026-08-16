@@ -17,6 +17,9 @@ def test_service_records_scene_without_hardware() -> None:
 
     assert snapshot.connected is True
     assert snapshot.firmware_version == "test-firmware"
+    assert snapshot.device_name == "Demo BUSY Bar"
+    assert snapshot.battery_percent == 84
+    assert snapshot.power_state == "charging"
     assert client.scenes == [scene]
     assert client.scenes[0].front == DisplayMessage("FOCUS", "#FF5C35")
 
@@ -27,3 +30,15 @@ def test_fake_client_rejects_actions_after_close() -> None:
 
     with pytest.raises(RuntimeError, match="closed"):
         client.snapshot()
+
+
+def test_fake_client_captures_deterministic_device_log() -> None:
+    client = FakeDeviceClient(log_content="fake diagnostic\n")
+
+    log = client.capture_logs()
+
+    assert log.path == "/ext/log.txt"
+    assert log.content == "fake diagnostic\n"
+    assert log.size_bytes == 16
+    assert log.truncated is False
+    assert client.log_capture_count == 1
