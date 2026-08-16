@@ -1,9 +1,12 @@
-# busybar-home
+# BUSY Bar Home
 
-A local visual control dashboard for a [BUSY Bar](https://busy.app/), built with Python 3.12 and
-the official [`busylib`](https://pypi.org/project/busylib/) SDK. It provides coordinated front and
-rear display scenes while keeping device access isolated behind a mockable client and explicit
-hardware safety gate.
+A local, visual control center for your [BUSY Bar](https://busy.app/). Choose polished front and
+rear display scenes in seconds, check battery and firmware health, and capture device diagnostics
+from one browser dashboard.
+
+BUSY Bar Home is built with Python 3.12 and the official
+[`busylib`](https://pypi.org/project/busylib/) SDK. Device access stays behind a mockable client and
+an explicit hardware safety gate, so development and tests run safely without physical hardware.
 
 ## Requirements
 

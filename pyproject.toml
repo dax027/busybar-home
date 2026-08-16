@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "busybar-home"
 version = "0.1.0"
-description = "Safe, testable automation for a BUSY Bar"
+description = "Local visual control for BUSY Bar scenes, device health, and diagnostics"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
