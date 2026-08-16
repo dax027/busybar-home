@@ -37,9 +37,8 @@ uv run busybar-home-web
 ```
 
 Then open [http://127.0.0.1:8765](http://127.0.0.1:8765). The dashboard previews the
-front and rear displays, offers one-click scene presets, and includes a switch that pauses or
-allows dynamic scene changes. Manual scene choices remain available when dynamic changes are
-paused. The default fake client records selections in memory and performs no network I/O.
+front and rear displays and offers one-click scene presets. The default fake client records
+selections in memory and performs no network I/O.
 
 ### Included scenes
 
@@ -106,9 +105,6 @@ sets both values intentionally for real-device use.
 
 Before changing physical-device behavior, verify the installed `busylib` API and device firmware
 compatibility. Do not put real access tokens in `.env.example`, tests, logs, or source control.
-
-The dynamic-scene switch currently records whether future automatic changes are permitted; no
-calendar, presence, or scheduling source is connected yet. Manual scene selection always works.
 
 ## Structure
 

@@ -4,13 +4,9 @@ const frontPreview = document.querySelector("#front-preview");
 const backPreview = document.querySelector("#back-preview");
 const backCue = document.querySelector("#back-cue");
 const previewScene = document.querySelector("#preview-scene");
-const dynamicToggle = document.querySelector("#dynamic-toggle");
-const dynamicDescription = document.querySelector("#dynamic-description");
-const switchLabel = document.querySelector("#switch-label");
 const deviceMode = document.querySelector("#device-mode");
 const toast = document.querySelector("#toast");
 
-let dashboard = null;
 let toastTimer = null;
 
 function showToast(message) {
@@ -39,19 +35,8 @@ function setPreview(preset) {
   stage.style.setProperty("--scene-color", preset.front.color);
 }
 
-function updateDynamic(enabled) {
-  dynamicToggle.checked = enabled;
-  stage.classList.toggle("is-dynamic", enabled);
-  switchLabel.textContent = enabled ? "Enabled" : "Paused";
-  dynamicDescription.textContent = enabled
-    ? "Automatic scene changes are allowed. Manual scene choices still work."
-    : "Automatic changes are paused. Manual scene choices still work.";
-}
-
 function render(state) {
-  dashboard = state;
   deviceMode.textContent = state.device_mode === "fake" ? "Demo device" : "BUSY Bar";
-  updateDynamic(state.dynamic_enabled);
   grid.replaceChildren();
 
   state.presets.forEach((preset) => {
@@ -99,24 +84,6 @@ async function activate(preset, card) {
     card.disabled = false;
   }
 }
-
-dynamicToggle.addEventListener("change", async () => {
-  const enabled = dynamicToggle.checked;
-  updateDynamic(enabled);
-  try {
-    const response = await fetch("/api/dynamic", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ enabled }),
-    });
-    if (!response.ok) throw new Error("Update failed");
-    dashboard = await response.json();
-    showToast(enabled ? "Dynamic scenes enabled" : "Dynamic scenes paused");
-  } catch (_error) {
-    updateDynamic(!enabled);
-    showToast("Could not change automation setting");
-  }
-});
 
 fetch("/api/dashboard")
   .then((response) => {
