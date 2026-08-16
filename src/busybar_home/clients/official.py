@@ -1,0 +1,261 @@
+"""Narrow adapter around the official ``busylib`` package.
+
+Importing this module is safe. Constructing the adapter creates the SDK client,
+and calling its methods may communicate with a physical BUSY Bar.
+"""
+
+from typing import Any
+
+from busybar_home.client import DisplayOwnershipError
+from busybar_home.models import DeviceSnapshot, DisplayScene, FrontStyle
+
+
+class OfficialBusyBarClient:
+    """Adapt the official SDK to the application-owned client interface."""
+
+    def __init__(
+        self,
+        address: str,
+        *,
+        token: str | None = None,
+        display_priority: int = 100,
+    ) -> None:
+        from busylib import BusyBar
+
+        self._client: Any = BusyBar(address, token=token)
+        self._display_priority = display_priority
+
+    def snapshot(self) -> DeviceSnapshot:
+        version = self._client.version()
+        return DeviceSnapshot(connected=True, firmware_version=str(version.version))
+
+    def show_scene(self, scene: DisplayScene) -> None:
+        from busylib import exceptions, types
+
+        if scene.front_style is FrontStyle.TERMINAL:
+            front_elements = [
+                types.RectangleElement(
+                    id="status-background",
+                    type="rectangle",
+                    x=0,
+                    y=0,
+                    width=72,
+                    height=16,
+                    fill="solid",
+                    fill_colors=["#000000"],
+                    border_width=0,
+                    display=types.DisplayName.FRONT,
+                ),
+                types.TextElement(
+                    id="status",
+                    type="text",
+                    x=36,
+                    y=8,
+                    align="center",
+                    text=f"> {scene.front.text}_",
+                    font="bold",
+                    color=scene.front.color,
+                    display=types.DisplayName.FRONT,
+                ),
+            ]
+        elif scene.front_style is FrontStyle.CYBERPUNK:
+            front_elements = [
+                types.RectangleElement(
+                    id="status-background",
+                    type="rectangle",
+                    x=0,
+                    y=0,
+                    width=72,
+                    height=16,
+                    fill="solid",
+                    fill_colors=["#000000"],
+                    border_width=0,
+                    display=types.DisplayName.FRONT,
+                ),
+                types.RectangleElement(
+                    id="glitch-magenta",
+                    type="rectangle",
+                    x=0,
+                    y=1,
+                    width=16,
+                    height=1,
+                    fill="solid",
+                    fill_colors=["#FF2DB2"],
+                    border_width=0,
+                    display=types.DisplayName.FRONT,
+                ),
+                types.RectangleElement(
+                    id="glitch-cyan",
+                    type="rectangle",
+                    x=55,
+                    y=14,
+                    width=17,
+                    height=1,
+                    fill="solid",
+                    fill_colors=["#23D9FF"],
+                    border_width=0,
+                    display=types.DisplayName.FRONT,
+                ),
+                types.TextElement(
+                    id="status-shadow-cyan",
+                    type="text",
+                    x=35,
+                    y=8,
+                    align="center",
+                    text=scene.front.text,
+                    font="bold",
+                    color="#23D9FF",
+                    display=types.DisplayName.FRONT,
+                ),
+                types.TextElement(
+                    id="status-shadow-magenta",
+                    type="text",
+                    x=37,
+                    y=8,
+                    align="center",
+                    text=scene.front.text,
+                    font="bold",
+                    color="#FF2DB2",
+                    display=types.DisplayName.FRONT,
+                ),
+                types.TextElement(
+                    id="status",
+                    type="text",
+                    x=36,
+                    y=8,
+                    align="center",
+                    text=scene.front.text,
+                    font="bold",
+                    color="#F6F7FF",
+                    display=types.DisplayName.FRONT,
+                ),
+            ]
+        else:
+            outline_offsets = (
+                (-1, -1),
+                (0, -1),
+                (1, -1),
+                (-1, 0),
+                (1, 0),
+                (-1, 1),
+                (0, 1),
+                (1, 1),
+            )
+            outline_elements = [
+                types.TextElement(
+                    id=f"status-outline-{index}",
+                    type="text",
+                    x=36 + offset_x,
+                    y=8 + offset_y,
+                    align="center",
+                    text=scene.front.text,
+                    font="bold",
+                    color="#FFFFFF",
+                    display=types.DisplayName.FRONT,
+                )
+                for index, (offset_x, offset_y) in enumerate(outline_offsets)
+            ]
+            front_elements = [
+                types.RectangleElement(
+                    id="status-background",
+                    type="rectangle",
+                    x=0,
+                    y=0,
+                    width=72,
+                    height=16,
+                    fill="solid",
+                    fill_colors=[scene.front.color],
+                    border_width=0,
+                    display=types.DisplayName.FRONT,
+                ),
+                *outline_elements,
+                types.TextElement(
+                    id="status",
+                    type="text",
+                    x=36,
+                    y=8,
+                    align="center",
+                    text=scene.front.text,
+                    font="bold",
+                    color="#000000",
+                    display=types.DisplayName.FRONT,
+                ),
+            ]
+
+        try:
+            self._client.display_draw(
+                types.DisplayElements(
+                    application_name="busybar-home",
+                    priority=self._display_priority,
+                    elements=[
+                        *front_elements,
+                        types.RectangleElement(
+                            id="rear-accent",
+                            type="rectangle",
+                            x=0,
+                            y=0,
+                            width=4,
+                            height=80,
+                            fill="solid",
+                            fill_colors=[scene.back.color],
+                            border_width=0,
+                            display=types.DisplayName.BACK,
+                        ),
+                        types.TextElement(
+                            id="status-back",
+                            type="text",
+                            x=12,
+                            y=18,
+                            align="mid_left",
+                            text=scene.back.text,
+                            font="normal",
+                            color="#FFFFFF",
+                            display=types.DisplayName.BACK,
+                        ),
+                        types.TextElement(
+                            id="rear-cue",
+                            type="text",
+                            x=12,
+                            y=48,
+                            align="mid_left",
+                            text=scene.rear_cue,
+                            font="small",
+                            color="#B8B8B8",
+                            display=types.DisplayName.BACK,
+                        ),
+                        types.RectangleElement(
+                            id="rear-rule",
+                            type="rectangle",
+                            x=12,
+                            y=68,
+                            width=136,
+                            height=1,
+                            fill="solid",
+                            fill_colors=["#555555"],
+                            border_width=0,
+                            display=types.DisplayName.BACK,
+                        ),
+                        types.TextElement(
+                            id="rear-signature",
+                            type="text",
+                            x=12,
+                            y=75,
+                            align="mid_left",
+                            text="BUSY / HOME",
+                            font="tiny",
+                            color="#777777",
+                            display=types.DisplayName.BACK,
+                        ),
+                    ],
+                ),
+                clear_before_draw=True,
+            )
+        except exceptions.BusyBarAPIError as error:
+            if error.code == 409 and "low priority" in str(error).lower():
+                raise DisplayOwnershipError(
+                    "Another BUSY application currently owns the display"
+                ) from error
+            raise
+
+    def close(self) -> None:
+        self._client.close()

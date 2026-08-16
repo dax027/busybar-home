@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#11130f" />
+    <title>BUSY Bar Home</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+    <script src="/static/app.js" defer></script>
+  </head>
+  <body>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="BUSY Bar Home">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>BUSY / HOME</span>
+      </a>
+      <div class="connection-pill" id="connection-pill">
+        <span class="status-dot"></span>
+        <span id="device-mode">Loading</span>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Your space, at a glance</p>
+          <h1>Set the signal.<br /><span>Keep your flow.</span></h1>
+          <p class="intro">
+            Choose a scene and preview exactly what people will see on both sides of your BUSY Bar.
+          </p>
+        </div>
+
+        <div class="device-stage" id="device-stage" aria-live="polite">
+          <div class="stage-label">
+            <span>Live preview</span>
+            <span id="preview-scene">Choose a scene</span>
+          </div>
+          <div class="bar-shell">
+            <div class="front-display pixel-display" id="front-preview">READY</div>
+            <div class="center-button" aria-hidden="true"><span></span></div>
+            <div class="rear-display pixel-display">
+              <strong id="back-preview">SELECT A SCENE</strong>
+              <span id="back-cue">Choose a cue below</span>
+              <small>BUSY / HOME</small>
+            </div>
+          </div>
+          <div class="display-key">
+            <span><i class="front-key"></i>Front · 72×16</span>
+            <span><i class="back-key"></i>Rear · 160×80</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="control-strip" aria-labelledby="dynamic-heading">
+        <div>
+          <p class="control-kicker">Automation</p>
+          <h2 id="dynamic-heading">Dynamic scenes</h2>
+          <p id="dynamic-description">Automatic changes are paused. Manual scene choices still work.</p>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="dynamic-toggle" />
+          <span class="switch-track"><span class="switch-knob"></span></span>
+          <span class="switch-label" id="switch-label">Paused</span>
+        </label>
+      </section>
+
+      <section class="scenes-section" aria-labelledby="scenes-heading">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Quick signals</p>
+            <h2 id="scenes-heading">Choose a scene</h2>
+          </div>
+          <p>One click updates both displays.</p>
+        </div>
+        <div class="scene-grid" id="scene-grid" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <noscript>This dashboard requires JavaScript to preview and select scenes.</noscript>
+  </body>
+</html>
