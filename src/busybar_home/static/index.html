@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#11130f" />
     <title>BUSY Bar Home</title>
-    <link rel="stylesheet" href="/static/styles.css?v=20260817-daydream" />
-    <script src="/static/app.js?v=20260817-daydream" defer></script>
+    <link rel="stylesheet" href="/static/styles.css?v=20260817-live-displays" />
+    <script src="/static/app.js?v=20260817-live-displays" defer></script>
   </head>
   <body>
     <div class="ambient ambient-one"></div>
@@ -31,7 +31,7 @@
           <p class="eyebrow">Your space, at a glance</p>
           <h1>Set the signal.<br /><span>Keep your flow.</span></h1>
           <p class="intro">
-            Choose a scene and preview exactly what people will see on both sides of your BUSY Bar.
+            Choose a scene and see the exact live pixels on the public-facing display.
           </p>
         </div>
 
@@ -41,17 +41,27 @@
             <span id="preview-scene">Choose a scene</span>
           </div>
           <div class="bar-shell">
-            <div class="front-display pixel-display" id="front-preview">READY</div>
-            <div class="center-button" aria-hidden="true"><span></span></div>
-            <div class="rear-display pixel-display">
-              <strong id="back-preview">SELECT A SCENE</strong>
-              <span id="back-cue">Choose a cue below</span>
-              <small>BUSY / HOME</small>
+            <div class="front-device">
+              <img
+                class="front-device-shell"
+                src="/static/busybar-device.png"
+                alt="BUSY Bar front display"
+              />
+              <div class="front-display pixel-display" id="front-preview">
+                <canvas
+                  id="live-front-preview"
+                  width="72"
+                  height="16"
+                  role="img"
+                  aria-label="Current BUSY Bar front screen"
+                  hidden
+                ></canvas>
+                <span class="front-preview-fallback" id="front-preview-fallback">READY</span>
+              </div>
             </div>
           </div>
           <div class="display-key">
             <span><i class="front-key"></i>Front · 72×16</span>
-            <span><i class="back-key"></i>Rear · 160×80</span>
           </div>
         </div>
       </section>
@@ -88,6 +98,80 @@
           </article>
         </div>
         <p class="status-note" id="status-note">Loading device status…</p>
+      </section>
+
+      <section class="ticker-section" aria-labelledby="ticker-heading">
+        <div class="section-heading ticker-heading">
+          <div>
+            <p class="eyebrow">Make your own</p>
+            <h2 id="ticker-heading">Custom ticker</h2>
+          </div>
+          <p>Preview first. Deploy only when it looks right.</p>
+        </div>
+
+        <form class="ticker-workbench" id="ticker-form">
+          <div class="ticker-controls">
+            <label class="ticker-message-control">
+              <span>Message</span>
+              <input
+                type="text"
+                id="ticker-message"
+                maxlength="48"
+                value="Welcome home"
+                autocomplete="off"
+                required
+              />
+              <small><span id="ticker-character-count">12</span> / 48 characters</small>
+            </label>
+
+            <div class="ticker-control-row">
+              <label class="color-control">
+                <span>Letters</span>
+                <span class="color-input-shell">
+                  <input type="color" id="ticker-font-color" value="#ffffff" />
+                  <output id="ticker-font-color-value">#FFFFFF</output>
+                </span>
+              </label>
+              <label class="color-control">
+                <span>Background</span>
+                <span class="color-input-shell">
+                  <input type="color" id="ticker-background-color" value="#111111" />
+                  <output id="ticker-background-color-value">#111111</output>
+                </span>
+              </label>
+            </div>
+
+            <label class="speed-control">
+              <span>Ticker speed <output id="ticker-speed-value">32 px/s</output></span>
+              <input type="range" id="ticker-speed" min="16" max="72" step="4" value="32" />
+              <small><span>Calm</span><span>Quick</span></small>
+            </label>
+
+            <fieldset class="effect-presets">
+              <legend>Effect preset</legend>
+              <label><input type="radio" name="ticker-effect" value="clean" checked /><span>Clean glide</span></label>
+              <label><input type="radio" name="ticker-effect" value="pulse" /><span>Soft pulse</span></label>
+              <label><input type="radio" name="ticker-effect" value="letter_flash" /><span>Letter flash</span></label>
+              <label><input type="radio" name="ticker-effect" value="color_wave" /><span>Color wave</span></label>
+              <label><input type="radio" name="ticker-effect" value="invert" /><span>Positive / negative</span></label>
+            </fieldset>
+          </div>
+
+          <div class="ticker-preview-panel">
+            <div class="ticker-preview-heading">
+              <span>Exact 72×16 preview</span>
+              <i id="ticker-preview-indicator">Rendering</i>
+            </div>
+            <div class="ticker-device-window">
+              <img id="ticker-preview" alt="Animated custom ticker preview" />
+            </div>
+            <p id="ticker-preview-note">Generating your device-native animation…</p>
+            <button class="ticker-deploy-button" id="ticker-deploy" type="submit">
+              Deploy to BUSY Bar
+            </button>
+            <small class="ticker-safety-note">Nothing is sent to the device until you press Deploy.</small>
+          </div>
+        </form>
       </section>
 
       <section class="scenes-section" aria-labelledby="scenes-heading">

@@ -44,6 +44,16 @@ def test_fake_client_captures_deterministic_device_log() -> None:
     assert client.log_capture_count == 1
 
 
+def test_fake_client_returns_deterministic_front_screen_frame() -> None:
+    client = FakeDeviceClient()
+
+    frame = client.front_screen_frame()
+
+    assert (frame.width, frame.height) == (72, 16)
+    assert frame.rgb == bytes((17, 17, 17)) * (72 * 16)
+    assert client.screen_capture_count == 1
+
+
 def test_display_animation_rejects_unsafe_or_non_native_paths() -> None:
     with pytest.raises(ValueError, match="relative"):
         DisplayAnimation("../coding_72x16.anim")

@@ -1,8 +1,9 @@
 """Device boundary used by the application and tests."""
 
+from collections.abc import AsyncIterator
 from typing import Protocol, runtime_checkable
 
-from busybar_home.models import DeviceLog, DeviceSnapshot, DisplayScene
+from busybar_home.models import DeviceLog, DeviceSnapshot, DisplayFrame, DisplayScene
 
 
 class DisplayOwnershipError(RuntimeError):
@@ -15,6 +16,12 @@ class DeviceClient(Protocol):
 
     def snapshot(self) -> DeviceSnapshot:
         """Return a small device-health snapshot."""
+
+    def front_screen_frame(self) -> DisplayFrame:
+        """Return the current front display as decoded RGB pixels."""
+
+    def stream_front_screen_frames(self) -> AsyncIterator[DisplayFrame]:
+        """Yield live front-display frames until the consumer disconnects."""
 
     def show_scene(self, scene: DisplayScene) -> None:
         """Show a coordinated scene on both displays."""

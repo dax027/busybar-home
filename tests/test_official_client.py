@@ -1,7 +1,12 @@
+import base64
 from types import SimpleNamespace
 from typing import Any
 
-from busybar_home.clients.official import MAX_LOG_BYTES, OfficialBusyBarClient
+from busybar_home.clients.official import (
+    MAX_LOG_BYTES,
+    OfficialBusyBarClient,
+    _decode_stream_frame,
+)
 from busybar_home.models import DisplayScene
 
 
@@ -10,6 +15,10 @@ class RecordingSdkClient:
         self.draw_calls: list[Any] = []
         self.clear_before_draw: list[bool] = []
         self.upload_calls: list[tuple[str, str, bytes]] = []
+        self.clear_calls = 0
+
+    def display_clear(self) -> None:
+        self.clear_calls += 1
 
     def assets_upload(self, application_name: str, path: str, payload: bytes) -> None:
         self.upload_calls.append((application_name, path, payload))
@@ -54,6 +63,15 @@ class RecordingLogSdkClient:
         return self.payload
 
 
+class RecordingScreenSdkClient:
+    def __init__(self) -> None:
+        self.calls: list[str] = []
+
+    def screen(self, display: str) -> bytes:
+        self.calls.append(display)
+        return bytes((12, 34, 210)) * (72 * 16)
+
+
 def test_official_adapter_reads_bounded_device_status_fields() -> None:
     sdk_client = RecordingStatusSdkClient()
     client = OfficialBusyBarClient.__new__(OfficialBusyBarClient)
@@ -92,6 +110,37 @@ def test_official_adapter_captures_default_device_log_with_size_limit() -> None:
         ("log_dump", None),
         ("storage_read", "/ext/log.txt"),
     ]
+
+
+def test_official_adapter_reads_front_screen_and_converts_bgr_to_rgb() -> None:
+    sdk_client = RecordingScreenSdkClient()
+    client = OfficialBusyBarClient.__new__(OfficialBusyBarClient)
+    client._client = sdk_client
+
+    frame = client.front_screen_frame()
+
+    assert (frame.width, frame.height) == (72, 16)
+    assert frame.rgb[:6] == bytes((210, 34, 12, 210, 34, 12))
+    assert len(frame.rgb) == 72 * 16 * 3
+    assert sdk_client.calls == ["front"]
+
+
+def test_official_adapter_decodes_stream_frame_and_converts_bgr_to_rgb() -> None:
+    raw_bgr = bytes((12, 34, 210)) * (72 * 16)
+
+    frame = _decode_stream_frame(
+        {
+            "width": 72,
+            "height": 16,
+            "encoding": "PLAIN",
+            "pixel_format": "RGB888",
+            "data": base64.b64encode(raw_bgr).decode("ascii"),
+        }
+    )
+
+    assert frame is not None
+    assert (frame.width, frame.height) == (72, 16)
+    assert frame.rgb[:6] == bytes((210, 34, 12, 210, 34, 12))
 
 
 def test_official_adapter_draws_both_displays_at_work_session_priority() -> None:
@@ -155,6 +204,44 @@ def test_official_adapter_renders_stock_terminal_animation() -> None:
     assert "status-background" not in elements
 
 
+def test_official_adapter_releases_and_replaces_in_memory_animation() -> None:
+    from busybar_home.models import DisplayAnimation, FrontStyle
+
+    sdk_client = RecordingSdkClient()
+    client = OfficialBusyBarClient.__new__(OfficialBusyBarClient)
+    client._client = sdk_client
+    client._display_priority = 100
+    first = DisplayScene.from_text(
+        "Custom ticker",
+        "FIRST",
+        "CUSTOM TICKER",
+        "#FFFFFF",
+        "Your message is live.",
+        FrontStyle.STATUS,
+        DisplayAnimation("custom_ticker.anim", stock=False, payload=b"bicycle0-first"),
+    )
+    second = DisplayScene.from_text(
+        "Custom ticker",
+        "SECOND",
+        "CUSTOM TICKER",
+        "#FFFFFF",
+        "Your message is live.",
+        FrontStyle.STATUS,
+        DisplayAnimation("custom_ticker.anim", stock=False, payload=b"bicycle0-second"),
+    )
+
+    client.show_scene(first)
+    client.show_scene(first)
+    client.show_scene(second)
+
+    assert sdk_client.clear_calls == 2
+    assert [call[2] for call in sdk_client.upload_calls] == [
+        b"bicycle0-first",
+        b"bicycle0-second",
+    ]
+    assert len(sdk_client.draw_calls) == 3
+
+
 def test_official_adapter_uploads_and_renders_busy_checklist_animation() -> None:
     from busybar_home.models import DisplayAnimation, FrontStyle
 
@@ -179,6 +266,7 @@ def test_official_adapter_uploads_and_renders_busy_checklist_animation() -> None
     assert application_name == "busybar-home"
     assert path == "busy_checklist_v2_72x16.anim"
     assert payload.startswith(b"bicycle0")
+    assert sdk_client.clear_calls == 1
     elements = {element.id: element for element in sdk_client.draw_calls[0].elements}
     animation = elements["status-animation"]
     assert animation.path == "busy_checklist_v2_72x16.anim"
@@ -205,6 +293,7 @@ def test_official_adapter_uploads_and_renders_call_animation() -> None:
     client.show_scene(scene)
 
     assert len(sdk_client.upload_calls) == 1
+    assert sdk_client.clear_calls == 1
     application_name, path, payload = sdk_client.upload_calls[0]
     assert application_name == "busybar-home"
     assert path == "on_a_call_mic_72x16.anim"

@@ -39,13 +39,25 @@ Start the dashboard on the local machine:
 uv run busybar-home-web
 ```
 
-Then open [http://127.0.0.1:8765](http://127.0.0.1:8765). The dashboard previews the
-front and rear displays and offers one-click scene presets. The default fake client records
-selections in memory and performs no network I/O.
+Then open [http://127.0.0.1:8765](http://127.0.0.1:8765). In official mode, the BUSY Bar image at
+the top uses the device's current 72×16 front frame, so it matches the physical public-facing
+display rather than merely assuming the selected scene is active. The private rear display is not
+shown in the dashboard preview. Scene cards retain their designed previews. The default fake client
+records selections in memory and performs no network I/O.
 
 The main page also shows device name, battery level, power state, firmware, API version, and
-uptime. Status is read once when the page loads and only again when **Refresh status** is selected;
-the app does not continuously poll the device.
+uptime. Status is read once when the page loads and only again when **Refresh status** is selected.
+The display preview subscribes to the firmware's live front-frame stream while the dashboard tab
+is visible, pauses when it is hidden, and falls back to the selected scene preview if the device is
+unavailable. It never writes to the display.
+
+The **Custom ticker** editor generates an exact 72×16 animated preview before anything is sent to
+the BUSY Bar. Enter up to 48 printable characters, choose letter and background colors, adjust the
+scroll speed, and select Clean glide, Soft pulse, Letter flash, Color wave, or Positive / negative.
+Only the **Deploy to BUSY Bar** button sends a display command. The device plays the resulting
+native animation locally; the dashboard's repeated traffic is limited to the read-only live-screen
+preview. Updated tickers reuse one managed asset after releasing the previous animation, avoiding
+unbounded device-storage growth.
 
 Open [http://127.0.0.1:8765/logs](http://127.0.0.1:8765/logs) for device diagnostics. Nothing is
 captured automatically. Selecting **Capture device log** snapshots the BUSY Bar's in-memory log
@@ -161,6 +173,8 @@ src/busybar_home/
   config.py            # environment-backed settings
   factory.py           # client selection and hardware safety gate
   models.py            # SDK-independent data models
+  animation.py         # in-memory BUSY Bar and WebP animation encoders
+  ticker.py            # bounded custom ticker renderer and effect presets
   service.py           # application use cases
   cli.py               # console entry point
   dashboard.py         # display presets and dashboard state
@@ -172,8 +186,11 @@ tests/                  # hardware-free unit tests
 ## SDK notes
 
 The adapter targets `busylib` 1.x. Scene rendering uses `display_draw(...)` with native text,
-rectangle, and stock animation elements. Device health uses `name()`, `status_power()`, `status_firmware()`, and
-`status_system()`. Manual diagnostics use `log_dump()` followed by `storage_read()`. The adapter
+rectangle, and stock animation elements. Device health uses `name()`, `status_power()`,
+`status_firmware()`, and `status_system()`. The live display preview uses
+`AsyncBusyBar.stream_status_ws()` for firmware-pushed front frames; `screen("front")` provides a
+snapshot fallback matching `/api/screen?display=0`. Manual diagnostics use `log_dump()`
+followed by `storage_read()`. The adapter
 clears the existing Canvas layer before applying a scene and uses configurable display priority so
 the dashboard can take ownership cleanly. BUSY Bar firmware and SDK contracts can change. Keep
 SDK-specific types and method calls inside `clients/official.py`; application code should depend

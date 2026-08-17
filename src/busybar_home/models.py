@@ -43,6 +43,7 @@ class DisplayAnimation:
     stock: bool = True
     section: str = "default"
     loop: bool = True
+    payload: bytes | None = None
 
     def __post_init__(self) -> None:
         path = self.path.strip()
@@ -58,6 +59,10 @@ class DisplayAnimation:
             raise ValueError("animation path must be relative and must not traverse directories")
         if not section:
             raise ValueError("animation section must not be empty")
+        if self.payload is not None and self.stock:
+            raise ValueError("in-memory animation payloads cannot be stock assets")
+        if self.payload is not None and not self.payload.startswith(b"bicycle0"):
+            raise ValueError("animation payload must use the BUSY Bar container format")
         object.__setattr__(self, "path", path)
         object.__setattr__(self, "section", section)
 
@@ -116,6 +121,21 @@ class DeviceSnapshot:
     power_state: str | None = None
     api_version: str | None = None
     uptime: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class DisplayFrame:
+    """One decoded RGB frame from a BUSY Bar display."""
+
+    width: int
+    height: int
+    rgb: bytes
+
+    def __post_init__(self) -> None:
+        if self.width <= 0 or self.height <= 0:
+            raise ValueError("display frame dimensions must be positive")
+        if len(self.rgb) != self.width * self.height * 3:
+            raise ValueError("display frame must contain exactly three RGB bytes per pixel")
 
 
 @dataclass(frozen=True, slots=True)

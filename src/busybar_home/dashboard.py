@@ -1,5 +1,6 @@
 """State and presets for the local dashboard."""
 
+from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from threading import Lock
 
@@ -8,9 +9,11 @@ from busybar_home.models import (
     DeviceLog,
     DeviceSnapshot,
     DisplayAnimation,
+    DisplayFrame,
     DisplayScene,
     FrontStyle,
 )
+from busybar_home.ticker import TickerConfig, build_ticker_scene
 
 
 @dataclass(frozen=True, slots=True)
@@ -195,6 +198,22 @@ class DashboardController:
     def device_status(self) -> DeviceSnapshot:
         with self._lock:
             return self._client.snapshot()
+
+    def front_screen_frame(self) -> DisplayFrame:
+        with self._lock:
+            return self._client.front_screen_frame()
+
+    def stream_front_screen_frames(self) -> AsyncIterator[DisplayFrame]:
+        return self._client.stream_front_screen_frames()
+
+    def activate_ticker(self, config: TickerConfig) -> tuple[dict[str, object], DeviceSnapshot]:
+        """Render and deploy one user-configured ticker."""
+        scene = build_ticker_scene(config)
+        with self._lock:
+            self._client.show_scene(scene)
+            snapshot = self._client.snapshot()
+            self._active_preset = "custom-ticker"
+            return self._state_unlocked(), snapshot
 
     def capture_device_logs(self) -> DeviceLog:
         with self._lock:

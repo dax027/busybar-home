@@ -40,6 +40,7 @@ source = { editable = "." }
 dependencies = [
     { name = "busylib" },
     { name = "fastapi" },
+    { name = "pillow" },
     { name = "uvicorn" },
 ]
 
@@ -53,6 +54,7 @@ dev = [
 requires-dist = [
     { name = "busylib", specifier = ">=1.0,<2.0" },
     { name = "fastapi", specifier = ">=0.116,<1.0" },
+    { name = "pillow", specifier = ">=12,<13" },
     { name = "uvicorn", specifier = ">=0.35,<1.0" },
 ]
 

@@ -3,17 +3,27 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import asdict
+from io import BytesIO
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from PIL import Image
+from pydantic import BaseModel, Field
 
 from busybar_home.client import DeviceClient, DisplayOwnershipError
 from busybar_home.config import Settings
 from busybar_home.dashboard import DashboardController
 from busybar_home.factory import create_client
+from busybar_home.ticker import (
+    MAX_MESSAGE_LENGTH,
+    MAX_SPEED,
+    MIN_SPEED,
+    TickerConfig,
+    TickerEffect,
+    build_ticker_assets,
+)
 
 STATIC_DIR = Path(__file__).with_name("static")
 
@@ -22,6 +32,20 @@ class DynamicUpdate(BaseModel):
     """Request body for the automatic-update switch."""
 
     enabled: bool
+
+
+class TickerRequest(BaseModel):
+    """Bounded custom ticker controls accepted from the local dashboard."""
+
+    message: str = Field(min_length=1, max_length=MAX_MESSAGE_LENGTH)
+    font_color: str = Field(pattern=r"^#[0-9A-Fa-f]{6}$")
+    background_color: str = Field(pattern=r"^#[0-9A-Fa-f]{6}$")
+    speed: int = Field(ge=MIN_SPEED, le=MAX_SPEED)
+    effect: TickerEffect
+
+    def to_config(self) -> TickerConfig:
+        """Convert transport validation into the application-owned model."""
+        return TickerConfig(**self.model_dump())
 
 
 def create_web_app(
@@ -66,6 +90,38 @@ def create_web_app(
         except Exception as error:
             raise HTTPException(status_code=502, detail="Device status unavailable") from error
 
+    @app.get("/api/device/screen/front")
+    def front_screen() -> Response:
+        try:
+            frame = controller.front_screen_frame()
+            output = BytesIO()
+            Image.frombytes("RGB", (frame.width, frame.height), frame.rgb).save(
+                output,
+                format="PNG",
+                optimize=True,
+            )
+        except Exception as error:
+            raise HTTPException(status_code=502, detail="Device screen unavailable") from error
+        return Response(
+            content=output.getvalue(),
+            media_type="image/png",
+            headers={"Cache-Control": "no-store"},
+        )
+
+    @app.websocket("/ws/device/screen/front")
+    async def stream_front_screen(websocket: WebSocket) -> None:
+        await websocket.accept()
+        try:
+            async for frame in controller.stream_front_screen_frames():
+                await websocket.send_bytes(frame.rgb)
+        except WebSocketDisconnect:
+            return
+        except Exception:
+            try:
+                await websocket.close(code=1011, reason="Device screen unavailable")
+            except RuntimeError:
+                return
+
     @app.post("/api/device/logs/capture")
     def capture_device_logs() -> dict[str, object]:
         try:
@@ -86,6 +142,33 @@ def create_web_app(
             ) from error
         except Exception as error:
             raise HTTPException(status_code=502, detail="Device command failed") from error
+        return {"state": state, "device": asdict(snapshot)}
+
+    @app.post("/api/ticker/preview")
+    def preview_ticker(request: TickerRequest) -> Response:
+        try:
+            assets = build_ticker_assets(request.to_config())
+        except ValueError as error:
+            raise HTTPException(status_code=422, detail=str(error)) from error
+        return Response(
+            content=assets.preview,
+            media_type="image/webp",
+            headers={"Cache-Control": "no-store"},
+        )
+
+    @app.post("/api/ticker/deploy")
+    def deploy_ticker(request: TickerRequest) -> dict[str, object]:
+        try:
+            state, snapshot = controller.activate_ticker(request.to_config())
+        except ValueError as error:
+            raise HTTPException(status_code=422, detail=str(error)) from error
+        except DisplayOwnershipError as error:
+            raise HTTPException(
+                status_code=409,
+                detail="Another BUSY app owns the display. Close it and try again.",
+            ) from error
+        except Exception as error:
+            raise HTTPException(status_code=502, detail="Ticker deployment failed") from error
         return {"state": state, "device": asdict(snapshot)}
 
     @app.put("/api/dynamic")

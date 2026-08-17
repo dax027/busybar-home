@@ -4,14 +4,59 @@ Importing this module is safe. Constructing the adapter creates the SDK client,
 and calling its methods may communicate with a physical BUSY Bar.
 """
 
+import base64
+import binascii
+from collections.abc import AsyncIterator
+from hashlib import sha256
 from pathlib import Path
 from typing import Any
 
 from busybar_home.client import DisplayOwnershipError
-from busybar_home.models import DeviceLog, DeviceSnapshot, DisplayScene, FrontStyle
+from busybar_home.models import DeviceLog, DeviceSnapshot, DisplayFrame, DisplayScene, FrontStyle
 
 MAX_LOG_BYTES = 512 * 1024
 ANIMATION_ASSET_DIR = Path(__file__).resolve().parents[1] / "assets"
+FRONT_WIDTH = 72
+FRONT_HEIGHT = 16
+
+
+def _bgr_to_display_frame(raw_bgr: bytes, width: int, height: int) -> DisplayFrame:
+    expected_size = width * height * 3
+    if len(raw_bgr) != expected_size:
+        raise ValueError("display returned an unexpected frame size")
+
+    # Firmware 1.1.1 sends BGR triples. Its own web UI performs this same
+    # channel swap before drawing each frame to a canvas.
+    rgb = bytearray(expected_size)
+    for offset in range(0, expected_size, 3):
+        rgb[offset] = raw_bgr[offset + 2]
+        rgb[offset + 1] = raw_bgr[offset + 1]
+        rgb[offset + 2] = raw_bgr[offset]
+    return DisplayFrame(width, height, bytes(rgb))
+
+
+def _decode_stream_frame(frame: dict[str, Any]) -> DisplayFrame | None:
+    from busylib import display
+
+    if frame.get("screen", "FRONT") != "FRONT":
+        return None
+    width = int(frame.get("width", 0))
+    height = int(frame.get("height", 0))
+    if (width, height) != (FRONT_WIDTH, FRONT_HEIGHT):
+        return None
+    encoded = frame.get("data")
+    if not isinstance(encoded, str):
+        return None
+    try:
+        payload = base64.b64decode(encoded, validate=True)
+        raw_bgr = display.decode_frame_data(
+            str(frame.get("encoding", "PLAIN")),
+            str(frame.get("pixel_format", "RGB888")),
+            payload,
+        )
+        return _bgr_to_display_frame(raw_bgr, width, height)
+    except (binascii.Error, ValueError):
+        return None
 
 
 class OfficialBusyBarClient:
@@ -26,9 +71,11 @@ class OfficialBusyBarClient:
     ) -> None:
         from busylib import BusyBar
 
+        self._address = address
+        self._token = token
         self._client: Any = BusyBar(address, token=token)
         self._display_priority = display_priority
-        self._uploaded_assets: set[str] = set()
+        self._uploaded_assets: dict[str, str] = {}
 
     def snapshot(self) -> DeviceSnapshot:
         name = self._client.name()
@@ -59,17 +106,44 @@ class OfficialBusyBarClient:
             truncated=truncated,
         )
 
+    def front_screen_frame(self) -> DisplayFrame:
+        """Read the same front-display frame used by the device's web UI."""
+        raw_bgr = self._client.screen("front")
+        return _bgr_to_display_frame(raw_bgr, FRONT_WIDTH, FRONT_HEIGHT)
+
+    async def stream_front_screen_frames(self) -> AsyncIterator[DisplayFrame]:
+        """Yield front frames from the firmware's official WebSocket stream."""
+        from busylib import AsyncBusyBar
+
+        async with AsyncBusyBar(self._address, token=self._token) as stream_client:
+            async for state in stream_client.stream_status_ws():
+                if not isinstance(state, dict):
+                    continue
+                for update in state.get("updates", []):
+                    if not isinstance(update, dict):
+                        continue
+                    frame = update.get("frame")
+                    if not isinstance(frame, dict):
+                        continue
+                    decoded = _decode_stream_frame(frame)
+                    if decoded is not None:
+                        yield decoded
+
     def show_scene(self, scene: DisplayScene) -> None:
         from busylib import exceptions, types
 
         if scene.front_animation is not None:
             animation = scene.front_animation
             if not animation.stock:
-                uploaded_assets = getattr(self, "_uploaded_assets", set())
-                if animation.path not in uploaded_assets:
-                    payload = (ANIMATION_ASSET_DIR / animation.path).read_bytes()
+                payload = animation.payload or (ANIMATION_ASSET_DIR / animation.path).read_bytes()
+                payload_digest = sha256(payload).hexdigest()
+                uploaded_assets = getattr(self, "_uploaded_assets", {})
+                if not isinstance(uploaded_assets, dict):
+                    uploaded_assets = {}
+                if uploaded_assets.get(animation.path) != payload_digest:
+                    self._client.display_clear()
                     self._client.assets_upload("busybar-home", animation.path, payload)
-                    uploaded_assets.add(animation.path)
+                    uploaded_assets[animation.path] = payload_digest
                     self._uploaded_assets = uploaded_assets
             animation_source = (
                 {"stock_path": f"animations/{animation.path}"}
