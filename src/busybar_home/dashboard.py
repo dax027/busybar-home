@@ -28,14 +28,17 @@ SCENE_PRESETS = (
     ScenePreset(
         id="focus",
         label="Deep focus",
-        description="Protect a block of uninterrupted work.",
+        description="A pencil works steadily through a focused task list.",
         scene=DisplayScene.from_text(
             "Deep focus",
             "BUSY",
             "DEEP FOCUS",
             "#FF5C35",
             "One task. No inbox.",
+            FrontStyle.STATUS,
+            DisplayAnimation("busy_checklist_v2_72x16.anim", stock=False),
         ),
+        front_preview="/static/animations/busy_checklist_v2_72x16.webp",
     ),
     ScenePreset(
         id="meeting",
@@ -55,14 +58,17 @@ SCENE_PRESETS = (
     ScenePreset(
         id="available",
         label="Available",
-        description="Make it clear that interruptions are welcome.",
+        description="A mint-green neon FREE sign flickers warmly to life.",
         scene=DisplayScene.from_text(
             "Available",
             "FREE",
             "RESET WINDOW",
             "#47D18C",
             "Clear quick replies.",
+            FrontStyle.STATUS,
+            DisplayAnimation("available_neon_72x16.anim", stock=False),
         ),
+        front_preview="/static/animations/available_neon_72x16.webp",
     ),
     ScenePreset(
         id="away",

@@ -155,6 +155,36 @@ def test_official_adapter_renders_stock_terminal_animation() -> None:
     assert "status-background" not in elements
 
 
+def test_official_adapter_uploads_and_renders_busy_checklist_animation() -> None:
+    from busybar_home.models import DisplayAnimation, FrontStyle
+
+    sdk_client = RecordingSdkClient()
+    client = OfficialBusyBarClient.__new__(OfficialBusyBarClient)
+    client._client = sdk_client
+    client._display_priority = 100
+    scene = DisplayScene.from_text(
+        "Deep focus",
+        "BUSY",
+        "DEEP FOCUS",
+        "#FF5C35",
+        "One task. No inbox.",
+        FrontStyle.STATUS,
+        DisplayAnimation("busy_checklist_v2_72x16.anim", stock=False),
+    )
+
+    client.show_scene(scene)
+
+    assert len(sdk_client.upload_calls) == 1
+    application_name, path, payload = sdk_client.upload_calls[0]
+    assert application_name == "busybar-home"
+    assert path == "busy_checklist_v2_72x16.anim"
+    assert payload.startswith(b"bicycle0")
+    elements = {element.id: element for element in sdk_client.draw_calls[0].elements}
+    animation = elements["status-animation"]
+    assert animation.path == "busy_checklist_v2_72x16.anim"
+    assert animation.loop is True
+
+
 def test_official_adapter_uploads_and_renders_call_animation() -> None:
     from busybar_home.models import DisplayAnimation, FrontStyle
 
@@ -212,6 +242,36 @@ def test_official_adapter_uploads_and_renders_away_brb_clock_animation() -> None
     elements = {element.id: element for element in sdk_client.draw_calls[0].elements}
     animation = elements["status-animation"]
     assert animation.path == "away_brb_clock_72x16.anim"
+    assert animation.loop is True
+
+
+def test_official_adapter_uploads_and_renders_available_neon_animation() -> None:
+    from busybar_home.models import DisplayAnimation, FrontStyle
+
+    sdk_client = RecordingSdkClient()
+    client = OfficialBusyBarClient.__new__(OfficialBusyBarClient)
+    client._client = sdk_client
+    client._display_priority = 100
+    scene = DisplayScene.from_text(
+        "Available",
+        "FREE",
+        "RESET WINDOW",
+        "#47D18C",
+        "Clear quick replies.",
+        FrontStyle.STATUS,
+        DisplayAnimation("available_neon_72x16.anim", stock=False),
+    )
+
+    client.show_scene(scene)
+
+    assert len(sdk_client.upload_calls) == 1
+    application_name, path, payload = sdk_client.upload_calls[0]
+    assert application_name == "busybar-home"
+    assert path == "available_neon_72x16.anim"
+    assert payload.startswith(b"bicycle0")
+    elements = {element.id: element for element in sdk_client.draw_calls[0].elements}
+    animation = elements["status-animation"]
+    assert animation.path == "available_neon_72x16.anim"
     assert animation.loop is True
 
 

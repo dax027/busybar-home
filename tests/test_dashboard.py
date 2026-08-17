@@ -17,6 +17,17 @@ def test_controller_activates_scene_and_tracks_selection() -> None:
     assert client.scenes[-1].rear_cue == "One task. No inbox."
 
 
+def test_focus_scene_exposes_busy_checklist_animation() -> None:
+    controller = DashboardController(FakeDeviceClient())
+
+    state, _snapshot = controller.activate("focus")
+    focus = next(preset for preset in state["presets"] if preset["id"] == "focus")
+
+    assert focus["front"]["text"] == "BUSY"
+    assert focus["front_animated"] is True
+    assert focus["front_preview"] == "/static/animations/busy_checklist_v2_72x16.webp"
+
+
 def test_controller_toggles_dynamic_updates_without_device_command() -> None:
     client = FakeDeviceClient()
     controller = DashboardController(client)
@@ -69,6 +80,17 @@ def test_away_scene_exposes_brb_clock_animation() -> None:
     assert away["front_preview"] == "/static/animations/away_brb_clock_72x16.webp"
     assert away["back"]["text"] == "SHORT BREAK"
     assert away["rear_cue"] == "Pause. Reset. Return."
+
+
+def test_available_scene_exposes_neon_animation() -> None:
+    controller = DashboardController(FakeDeviceClient())
+
+    state, _snapshot = controller.activate("available")
+    available = next(preset for preset in state["presets"] if preset["id"] == "available")
+
+    assert available["front"]["text"] == "FREE"
+    assert available["front_animated"] is True
+    assert available["front_preview"] == "/static/animations/available_neon_72x16.webp"
 
 
 def test_hacking_scene_exposes_cyberpunk_style_and_personal_cue() -> None:
