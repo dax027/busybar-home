@@ -71,6 +71,21 @@ SCENE_PRESETS = (
         front_preview="/static/animations/available_neon_72x16.webp",
     ),
     ScenePreset(
+        id="wife",
+        label="I love my wife",
+        description="A heartbeat sends bold positive-negative color waves across the message.",
+        scene=DisplayScene.from_text(
+            "I love my wife",
+            "I ♥ MY WIFE",
+            "LUCKY HUSBAND",
+            "#FF477E",
+            "Tell her. Show her.",
+            FrontStyle.STATUS,
+            DisplayAnimation("love_my_wife_72x16.anim", stock=False),
+        ),
+        front_preview="/static/animations/love_my_wife_72x16.webp",
+    ),
+    ScenePreset(
         id="away",
         label="Stepped away",
         description="A ticking analog clock keeps a bold BRB status moving gently.",

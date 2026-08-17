@@ -93,6 +93,19 @@ def test_available_scene_exposes_neon_animation() -> None:
     assert available["front_preview"] == "/static/animations/available_neon_72x16.webp"
 
 
+def test_wife_scene_exposes_heartbeat_inversion_animation() -> None:
+    controller = DashboardController(FakeDeviceClient())
+
+    state, _snapshot = controller.activate("wife")
+    wife = next(preset for preset in state["presets"] if preset["id"] == "wife")
+
+    assert wife["front"]["text"] == "I ♥ MY WIFE"
+    assert wife["front_animated"] is True
+    assert wife["front_preview"] == "/static/animations/love_my_wife_72x16.webp"
+    assert wife["back"]["text"] == "LUCKY HUSBAND"
+    assert wife["rear_cue"] == "Tell her. Show her."
+
+
 def test_hacking_scene_exposes_cyberpunk_style_and_personal_cue() -> None:
     controller = DashboardController(FakeDeviceClient())
 
