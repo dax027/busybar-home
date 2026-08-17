@@ -36,6 +36,33 @@ class DisplayMessage:
 
 
 @dataclass(frozen=True, slots=True)
+class DisplayAnimation:
+    """Device-native animation selected independently of the official SDK."""
+
+    path: str
+    stock: bool = True
+    section: str = "default"
+    loop: bool = True
+
+    def __post_init__(self) -> None:
+        path = self.path.strip()
+        section = self.section.strip()
+        if not path or not path.lower().endswith(".anim"):
+            raise ValueError("animation path must name an .anim file")
+        path_parts = path.split("/")
+        if (
+            path.startswith("/")
+            or "\\" in path
+            or any(part in {"", ".", ".."} for part in path_parts)
+        ):
+            raise ValueError("animation path must be relative and must not traverse directories")
+        if not section:
+            raise ValueError("animation section must not be empty")
+        object.__setattr__(self, "path", path)
+        object.__setattr__(self, "section", section)
+
+
+@dataclass(frozen=True, slots=True)
 class DisplayScene:
     """Content shown together on the front and rear displays."""
 
@@ -44,6 +71,7 @@ class DisplayScene:
     back: DisplayMessage
     rear_cue: str = "Stay intentional."
     front_style: FrontStyle = FrontStyle.STATUS
+    front_animation: DisplayAnimation | None = None
 
     def __post_init__(self) -> None:
         normalized = self.name.strip()
@@ -64,6 +92,7 @@ class DisplayScene:
         color: str,
         rear_cue: str = "Stay intentional.",
         front_style: FrontStyle = FrontStyle.STATUS,
+        front_animation: DisplayAnimation | None = None,
     ) -> Self:
         """Build a two-display scene with one shared accent color."""
         return cls(
@@ -72,6 +101,7 @@ class DisplayScene:
             back=DisplayMessage(back_text, color),
             rear_cue=rear_cue,
             front_style=front_style,
+            front_animation=front_animation,
         )
 
 

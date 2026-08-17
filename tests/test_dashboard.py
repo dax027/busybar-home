@@ -42,6 +42,8 @@ def test_coding_scene_exposes_terminal_style_and_personal_cue() -> None:
 
     assert coding["front"]["text"] == "CODING"
     assert coding["front_style"] == "terminal"
+    assert coding["front_animated"] is True
+    assert coding["front_preview"] == "/static/animations/coding_72x16.webp"
     assert coding["rear_cue"] == "Write. Run. Refine."
 
 
@@ -64,6 +66,8 @@ def test_low_social_battery_scene_exposes_battery_style_and_private_cue() -> Non
 
     assert preset["front"]["text"] == "LOW SOCIAL"
     assert preset["front_style"] == "low_battery"
+    assert preset["front_animated"] is True
+    assert preset["front_preview"] == ("/static/animations/low_social_battery_72x16.webp")
     assert preset["back"]["text"] == "SOCIAL BATTERY"
     assert preset["rear_cue"] == "Quiet mode. Recharge."
 

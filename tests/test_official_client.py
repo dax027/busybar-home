@@ -123,8 +123,8 @@ def test_official_adapter_draws_both_displays_at_work_session_priority() -> None
     assert elements["rear-cue"].text == "One task. No inbox."
 
 
-def test_official_adapter_renders_terminal_scene_with_static_cursor() -> None:
-    from busybar_home.models import FrontStyle
+def test_official_adapter_renders_stock_terminal_animation() -> None:
+    from busybar_home.models import DisplayAnimation, FrontStyle
 
     sdk_client = RecordingSdkClient()
     client = OfficialBusyBarClient.__new__(OfficialBusyBarClient)
@@ -137,15 +137,18 @@ def test_official_adapter_renders_terminal_scene_with_static_cursor() -> None:
         "#42FF88",
         "Write. Run. Refine.",
         FrontStyle.TERMINAL,
+        DisplayAnimation("coding_72x16.anim"),
     )
 
     client.show_scene(scene)
 
     elements = {element.id: element for element in sdk_client.draw_calls[0].elements}
-    assert elements["status-background"].fill_colors == ["#000000FF"]
-    assert elements["status"].text == "> CODING_"
-    assert elements["status"].color == "#42FF88FF"
-    assert not any(element_id.startswith("status-outline") for element_id in elements)
+    animation = elements["status-animation"]
+    assert animation.stock_path == "animations/coding_72x16.anim"
+    assert animation.section == "default"
+    assert animation.loop is True
+    assert animation.display == "front"
+    assert "status-background" not in elements
 
 
 def test_official_adapter_renders_cyberpunk_scene_with_glitch_layers() -> None:
@@ -175,8 +178,8 @@ def test_official_adapter_renders_cyberpunk_scene_with_glitch_layers() -> None:
     assert elements["glitch-magenta"].fill_colors == ["#FF2DB2FF"]
 
 
-def test_official_adapter_renders_low_social_battery_glyph() -> None:
-    from busybar_home.models import FrontStyle
+def test_official_adapter_renders_stock_low_social_battery_animation() -> None:
+    from busybar_home.models import DisplayAnimation, FrontStyle
 
     sdk_client = RecordingSdkClient()
     client = OfficialBusyBarClient.__new__(OfficialBusyBarClient)
@@ -189,22 +192,17 @@ def test_official_adapter_renders_low_social_battery_glyph() -> None:
         "#FF4D4D",
         "Quiet mode. Recharge.",
         FrontStyle.LOW_BATTERY,
+        DisplayAnimation("low_social_battery_72x16.anim"),
     )
 
     client.show_scene(scene)
 
     elements = {element.id: element for element in sdk_client.draw_calls[0].elements}
-    assert elements["status-background"].fill_colors == ["#000000FF"]
-    assert elements["battery-outline"].border_color == "#FFFFFFFF"
-    assert elements["battery-level"].fill_colors == ["#FF4D4DFF"]
-    assert elements["battery-cap"].fill_colors == ["#FFFFFFFF"]
-    assert elements["status"].text == "LOW SOCIAL"
-    assert elements["status"].font == "tiny"
-    assert elements["status"].align == "mid_left"
-    assert (elements["status"].x, elements["status"].y) == (24, 6)
-    assert elements["status-battery"].text == "BATTERY"
-    assert elements["status-battery"].color == "#FFFFFFFF"
-    assert (elements["status-battery"].x, elements["status-battery"].y) == (24, 12)
+    animation = elements["status-animation"]
+    assert animation.stock_path == "animations/low_social_battery_72x16.anim"
+    assert animation.section == "default"
+    assert animation.loop is True
+    assert animation.display == "front"
 
 
 def test_official_adapter_renders_daydreaming_sky_and_clouds() -> None:

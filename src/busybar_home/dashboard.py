@@ -4,7 +4,13 @@ from dataclasses import dataclass
 from threading import Lock
 
 from busybar_home.client import DeviceClient
-from busybar_home.models import DeviceLog, DeviceSnapshot, DisplayScene, FrontStyle
+from busybar_home.models import (
+    DeviceLog,
+    DeviceSnapshot,
+    DisplayAnimation,
+    DisplayScene,
+    FrontStyle,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -15,6 +21,7 @@ class ScenePreset:
     label: str
     description: str
     scene: DisplayScene
+    front_preview: str | None = None
 
 
 SCENE_PRESETS = (
@@ -77,7 +84,9 @@ SCENE_PRESETS = (
             "#FF4D4D",
             "Quiet mode. Recharge.",
             FrontStyle.LOW_BATTERY,
+            DisplayAnimation("low_social_battery_72x16.anim"),
         ),
+        front_preview="/static/animations/low_social_battery_72x16.webp",
     ),
     ScenePreset(
         id="coding",
@@ -90,7 +99,9 @@ SCENE_PRESETS = (
             "#42FF88",
             "Write. Run. Refine.",
             FrontStyle.TERMINAL,
+            DisplayAnimation("coding_72x16.anim"),
         ),
+        front_preview="/static/animations/coding_72x16.webp",
     ),
     ScenePreset(
         id="hacking",
@@ -186,6 +197,8 @@ class DashboardController:
                     },
                     "rear_cue": preset.scene.rear_cue,
                     "front_style": preset.scene.front_style.value,
+                    "front_animated": preset.scene.front_animation is not None,
+                    "front_preview": preset.front_preview,
                 }
                 for preset in SCENE_PRESETS
             ],

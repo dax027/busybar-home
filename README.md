@@ -63,14 +63,19 @@ local and do not commit or share them casually.
 | In a meeting | `ON A CALL` | `MEETING MODE` — Capture decisions. |
 | Available | `FREE` | `RESET WINDOW` — Clear quick replies. |
 | Stepped away | `AWAY` | `PAUSE` — Reset when I return. |
-| Low social battery | Red low-battery glyph with `LOW SOCIAL` and `BATTERY` | `SOCIAL BATTERY` — Quiet mode. Recharge. |
-| Coding | Green `> CODING_` terminal prompt | `BUILD MODE` — Write. Run. Refine. |
+| Low social battery | Native animated low-battery display | `SOCIAL BATTERY` — Quiet mode. Recharge. |
+| Coding | Native animated coding display | `BUILD MODE` — Write. Run. Refine. |
 | Hacking | Cyan/magenta cyberpunk `HACKING` treatment | `CYBER OPS` — Map. Probe. Learn. |
 | Daydreaming | Sky-blue `DAYDREAMING` scene with white clouds | `WANDER MODE` — Let ideas drift. |
 
-The browser preview animates the Coding cursor and Hacking glitch accents. The physical Coding
-cursor remains static because `busylib` 1.x does not currently convert animation assets; the app
-does not simulate blinking with a continuous network-command loop.
+The browser uses the official frame sets to preview Coding and Low social battery exactly, while
+Hacking retains its animated glitch preview. On the physical device, Coding and Low social battery
+use the corresponding stock BUSY Bar animations. Playback happens on the device; the app does not
+simulate animation with a continuous network-command loop.
+
+The Coding and Low social battery browser previews are generated from the corresponding official
+[BUSY Bar firmware animation assets](https://github.com/busy-app/busybar-firmware/tree/dev/assets/shared/animations),
+which are licensed by BUSY under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 
 ### Everyday real-device launcher
 
@@ -164,8 +169,8 @@ tests/                  # hardware-free unit tests
 
 ## SDK notes
 
-The adapter targets `busylib` 1.x. Scene rendering uses `display_draw(...)` with native text and
-rectangle elements. Device health uses `name()`, `status_power()`, `status_firmware()`, and
+The adapter targets `busylib` 1.x. Scene rendering uses `display_draw(...)` with native text,
+rectangle, and stock animation elements. Device health uses `name()`, `status_power()`, `status_firmware()`, and
 `status_system()`. Manual diagnostics use `log_dump()` followed by `storage_read()`. The adapter
 clears the existing Canvas layer before applying a scene and uses configurable display priority so
 the dashboard can take ownership cleanly. BUSY Bar firmware and SDK contracts can change. Keep

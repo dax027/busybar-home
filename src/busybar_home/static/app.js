@@ -76,7 +76,13 @@ function setPreview(preset) {
   stage.classList.toggle("low-battery-scene", preset.front_style === "low_battery");
   stage.classList.toggle("daydream-scene", preset.front_style === "daydream");
   frontPreview.replaceChildren();
-  if (preset.front_style === "terminal") {
+  if (preset.front_preview) {
+    const preview = document.createElement("img");
+    preview.className = "native-animation-preview";
+    preview.src = preset.front_preview;
+    preview.alt = `${preset.label} animated front display`;
+    frontPreview.append(preview);
+  } else if (preset.front_style === "terminal") {
     frontPreview.append(document.createTextNode(`> ${preset.front.text}`));
     const cursor = document.createElement("span");
     cursor.className = "front-cursor";
@@ -132,7 +138,9 @@ function render(state) {
     card.classList.toggle("active", preset.id === state.active_preset);
     card.style.setProperty("--card-color", preset.front.color);
     card.setAttribute("aria-pressed", String(preset.id === state.active_preset));
-    const frontText = preset.front_style === "terminal"
+    const frontText = preset.front_preview
+      ? `<img class="native-animation-preview" src="${preset.front_preview}" alt="${preset.label} animated front display">`
+      : preset.front_style === "terminal"
       ? `&gt; ${preset.front.text}<span class="front-cursor">_</span>`
       : preset.front_style === "low_battery"
         ? `<span class="battery-glyph" aria-hidden="true"></span><span class="battery-copy"><span class="battery-label">${preset.front.text}</span><span class="battery-sub-label">BATTERY</span></span>`

@@ -59,7 +59,28 @@ class OfficialBusyBarClient:
     def show_scene(self, scene: DisplayScene) -> None:
         from busylib import exceptions, types
 
-        if scene.front_style is FrontStyle.LOW_BATTERY:
+        if scene.front_animation is not None:
+            animation = scene.front_animation
+            animation_source = (
+                {"stock_path": f"animations/{animation.path}"}
+                if animation.stock
+                else {"path": animation.path}
+            )
+            front_elements = [
+                types.AnimationElement(
+                    id="status-animation",
+                    type="animation",
+                    x=0,
+                    y=0,
+                    display=types.DisplayName.FRONT,
+                    loop=animation.loop,
+                    await_previous_end=False,
+                    section=animation.section,
+                    opacity=100,
+                    **animation_source,
+                )
+            ]
+        elif scene.front_style is FrontStyle.LOW_BATTERY:
             front_elements = [
                 types.RectangleElement(
                     id="status-background",

@@ -1,7 +1,7 @@
 import pytest
 
 from busybar_home.clients.fake import FakeDeviceClient
-from busybar_home.models import DisplayMessage, DisplayScene
+from busybar_home.models import DisplayAnimation, DisplayMessage, DisplayScene
 from busybar_home.service import BusyBarService
 
 
@@ -42,3 +42,12 @@ def test_fake_client_captures_deterministic_device_log() -> None:
     assert log.size_bytes == 16
     assert log.truncated is False
     assert client.log_capture_count == 1
+
+
+def test_display_animation_rejects_unsafe_or_non_native_paths() -> None:
+    with pytest.raises(ValueError, match="relative"):
+        DisplayAnimation("../coding_72x16.anim")
+    with pytest.raises(ValueError, match="relative"):
+        DisplayAnimation(r"animations\coding_72x16.anim")
+    with pytest.raises(ValueError, match=r"\.anim"):
+        DisplayAnimation("coding.gif")
