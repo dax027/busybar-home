@@ -4,12 +4,14 @@ Importing this module is safe. Constructing the adapter creates the SDK client,
 and calling its methods may communicate with a physical BUSY Bar.
 """
 
+from pathlib import Path
 from typing import Any
 
 from busybar_home.client import DisplayOwnershipError
 from busybar_home.models import DeviceLog, DeviceSnapshot, DisplayScene, FrontStyle
 
 MAX_LOG_BYTES = 512 * 1024
+ANIMATION_ASSET_DIR = Path(__file__).resolve().parents[1] / "assets"
 
 
 class OfficialBusyBarClient:
@@ -26,6 +28,7 @@ class OfficialBusyBarClient:
 
         self._client: Any = BusyBar(address, token=token)
         self._display_priority = display_priority
+        self._uploaded_assets: set[str] = set()
 
     def snapshot(self) -> DeviceSnapshot:
         name = self._client.name()
@@ -61,6 +64,13 @@ class OfficialBusyBarClient:
 
         if scene.front_animation is not None:
             animation = scene.front_animation
+            if not animation.stock:
+                uploaded_assets = getattr(self, "_uploaded_assets", set())
+                if animation.path not in uploaded_assets:
+                    payload = (ANIMATION_ASSET_DIR / animation.path).read_bytes()
+                    self._client.assets_upload("busybar-home", animation.path, payload)
+                    uploaded_assets.add(animation.path)
+                    self._uploaded_assets = uploaded_assets
             animation_source = (
                 {"stock_path": f"animations/{animation.path}"}
                 if animation.stock

@@ -9,6 +9,10 @@ class RecordingSdkClient:
     def __init__(self) -> None:
         self.draw_calls: list[Any] = []
         self.clear_before_draw: list[bool] = []
+        self.upload_calls: list[tuple[str, str, bytes]] = []
+
+    def assets_upload(self, application_name: str, path: str, payload: bytes) -> None:
+        self.upload_calls.append((application_name, path, payload))
 
     def display_draw(self, payload: Any, *, clear_before_draw: bool = False) -> None:
         self.draw_calls.append(payload)
@@ -151,8 +155,68 @@ def test_official_adapter_renders_stock_terminal_animation() -> None:
     assert "status-background" not in elements
 
 
-def test_official_adapter_renders_cyberpunk_scene_with_glitch_layers() -> None:
-    from busybar_home.models import FrontStyle
+def test_official_adapter_uploads_and_renders_call_animation() -> None:
+    from busybar_home.models import DisplayAnimation, FrontStyle
+
+    sdk_client = RecordingSdkClient()
+    client = OfficialBusyBarClient.__new__(OfficialBusyBarClient)
+    client._client = sdk_client
+    client._display_priority = 100
+    scene = DisplayScene.from_text(
+        "In a meeting",
+        "ON A CALL",
+        "MEETING MODE",
+        "#EF3D77",
+        "Capture decisions.",
+        FrontStyle.STATUS,
+        DisplayAnimation("on_a_call_mic_72x16.anim", stock=False),
+    )
+
+    client.show_scene(scene)
+
+    assert len(sdk_client.upload_calls) == 1
+    application_name, path, payload = sdk_client.upload_calls[0]
+    assert application_name == "busybar-home"
+    assert path == "on_a_call_mic_72x16.anim"
+    assert payload.startswith(b"bicycle0")
+    elements = {element.id: element for element in sdk_client.draw_calls[0].elements}
+    animation = elements["status-animation"]
+    assert animation.path == "on_a_call_mic_72x16.anim"
+    assert animation.loop is True
+
+
+def test_official_adapter_uploads_and_renders_away_brb_clock_animation() -> None:
+    from busybar_home.models import DisplayAnimation, FrontStyle
+
+    sdk_client = RecordingSdkClient()
+    client = OfficialBusyBarClient.__new__(OfficialBusyBarClient)
+    client._client = sdk_client
+    client._display_priority = 100
+    scene = DisplayScene.from_text(
+        "Stepped away",
+        "BRB",
+        "SHORT BREAK",
+        "#FFBF47",
+        "Pause. Reset. Return.",
+        FrontStyle.STATUS,
+        DisplayAnimation("away_brb_clock_72x16.anim", stock=False),
+    )
+
+    client.show_scene(scene)
+
+    assert len(sdk_client.upload_calls) == 1
+    application_name, path, payload = sdk_client.upload_calls[0]
+    assert application_name == "busybar-home"
+    assert path == "away_brb_clock_72x16.anim"
+    assert payload.startswith(b"bicycle0")
+    elements = {element.id: element for element in sdk_client.draw_calls[0].elements}
+    animation = elements["status-animation"]
+    assert animation.path == "away_brb_clock_72x16.anim"
+    assert animation.loop is True
+
+
+def test_official_adapter_uploads_and_renders_hacking_animation() -> None:
+    from busybar_home.models import DisplayAnimation, FrontStyle
 
     sdk_client = RecordingSdkClient()
     client = OfficialBusyBarClient.__new__(OfficialBusyBarClient)
@@ -165,17 +229,20 @@ def test_official_adapter_renders_cyberpunk_scene_with_glitch_layers() -> None:
         "#FF2DB2",
         "Map. Probe. Learn.",
         FrontStyle.CYBERPUNK,
+        DisplayAnimation("hacking_fawkes_72x16.anim", stock=False),
     )
 
     client.show_scene(scene)
 
+    assert len(sdk_client.upload_calls) == 1
+    application_name, path, payload = sdk_client.upload_calls[0]
+    assert application_name == "busybar-home"
+    assert path == "hacking_fawkes_72x16.anim"
+    assert payload.startswith(b"bicycle0")
     elements = {element.id: element for element in sdk_client.draw_calls[0].elements}
-    assert elements["status-background"].fill_colors == ["#000000FF"]
-    assert elements["status"].text == "HACKING"
-    assert elements["status-shadow-cyan"].color == "#23D9FFFF"
-    assert elements["status-shadow-magenta"].color == "#FF2DB2FF"
-    assert elements["glitch-cyan"].fill_colors == ["#23D9FFFF"]
-    assert elements["glitch-magenta"].fill_colors == ["#FF2DB2FF"]
+    animation = elements["status-animation"]
+    assert animation.path == "hacking_fawkes_72x16.anim"
+    assert animation.loop is True
 
 
 def test_official_adapter_renders_stock_low_social_battery_animation() -> None:
@@ -205,8 +272,8 @@ def test_official_adapter_renders_stock_low_social_battery_animation() -> None:
     assert animation.display == "front"
 
 
-def test_official_adapter_renders_daydreaming_sky_and_clouds() -> None:
-    from busybar_home.models import FrontStyle
+def test_official_adapter_uploads_and_renders_daydreaming_animation() -> None:
+    from busybar_home.models import DisplayAnimation, FrontStyle
 
     sdk_client = RecordingSdkClient()
     client = OfficialBusyBarClient.__new__(OfficialBusyBarClient)
@@ -219,15 +286,21 @@ def test_official_adapter_renders_daydreaming_sky_and_clouds() -> None:
         "#69C6FF",
         "Let ideas drift.",
         FrontStyle.DAYDREAM,
+        DisplayAnimation("daydreaming_72x16.anim", stock=False),
     )
 
     client.show_scene(scene)
 
+    assert len(sdk_client.upload_calls) == 1
+    application_name, path, payload = sdk_client.upload_calls[0]
+    assert application_name == "busybar-home"
+    assert path == "daydreaming_72x16.anim"
+    assert payload.startswith(b"bicycle0")
     elements = {element.id: element for element in sdk_client.draw_calls[0].elements}
-    assert elements["status-background"].fill_colors == ["#69C6FFFF"]
-    assert elements["status"].text == "DAYDREAMING"
-    assert elements["status"].font == "normal"
-    assert elements["status"].color == "#183B63FF"
-    cloud_ids = [element_id for element_id in elements if element_id.startswith("cloud-")]
-    assert len(cloud_ids) == 6
-    assert all(elements[element_id].fill_colors == ["#FFFFFFFF"] for element_id in cloud_ids)
+    animation = elements["status-animation"]
+    assert animation.path == "daydreaming_72x16.anim"
+    assert animation.loop is True
+
+    client.show_scene(scene)
+
+    assert len(sdk_client.upload_calls) == 1

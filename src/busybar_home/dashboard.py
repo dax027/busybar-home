@@ -40,14 +40,17 @@ SCENE_PRESETS = (
     ScenePreset(
         id="meeting",
         label="In a meeting",
-        description="Let people know you are on a call.",
+        description="A live microphone and level meter show that a call is active.",
         scene=DisplayScene.from_text(
             "In a meeting",
             "ON A CALL",
             "MEETING MODE",
             "#EF3D77",
             "Capture decisions.",
+            FrontStyle.STATUS,
+            DisplayAnimation("on_a_call_mic_72x16.anim", stock=False),
         ),
+        front_preview="/static/animations/on_a_call_mic_72x16.webp",
     ),
     ScenePreset(
         id="available",
@@ -64,14 +67,17 @@ SCENE_PRESETS = (
     ScenePreset(
         id="away",
         label="Stepped away",
-        description="Show a calm, temporary away state.",
+        description="A ticking analog clock keeps a bold BRB status moving gently.",
         scene=DisplayScene.from_text(
             "Stepped away",
-            "AWAY",
-            "PAUSE",
+            "BRB",
+            "SHORT BREAK",
             "#FFBF47",
-            "Reset when I return.",
+            "Pause. Reset. Return.",
+            FrontStyle.STATUS,
+            DisplayAnimation("away_brb_clock_72x16.anim", stock=False),
         ),
+        front_preview="/static/animations/away_brb_clock_72x16.webp",
     ),
     ScenePreset(
         id="low-social-battery",
@@ -106,7 +112,7 @@ SCENE_PRESETS = (
     ScenePreset(
         id="hacking",
         label="Hacking",
-        description="A neon cyber-ops signal with a chromatic glitch edge.",
+        description="A masked cyberpunk reveal that glitches into a neon wordmark.",
         scene=DisplayScene.from_text(
             "Hacking",
             "HACKING",
@@ -114,7 +120,9 @@ SCENE_PRESETS = (
             "#FF2DB2",
             "Map. Probe. Learn.",
             FrontStyle.CYBERPUNK,
+            DisplayAnimation("hacking_fawkes_72x16.anim", stock=False),
         ),
+        front_preview="/static/animations/hacking_fawkes_72x16.webp",
     ),
     ScenePreset(
         id="daydreaming",
@@ -127,7 +135,9 @@ SCENE_PRESETS = (
             "#69C6FF",
             "Let ideas drift.",
             FrontStyle.DAYDREAM,
+            DisplayAnimation("daydreaming_72x16.anim", stock=False),
         ),
+        front_preview="/static/animations/daydreaming_72x16.webp",
     ),
 )
 

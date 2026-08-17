@@ -47,6 +47,30 @@ def test_coding_scene_exposes_terminal_style_and_personal_cue() -> None:
     assert coding["rear_cue"] == "Write. Run. Refine."
 
 
+def test_meeting_scene_exposes_live_microphone_animation() -> None:
+    controller = DashboardController(FakeDeviceClient())
+
+    state, _snapshot = controller.activate("meeting")
+    meeting = next(preset for preset in state["presets"] if preset["id"] == "meeting")
+
+    assert meeting["front"]["text"] == "ON A CALL"
+    assert meeting["front_animated"] is True
+    assert meeting["front_preview"] == "/static/animations/on_a_call_mic_72x16.webp"
+
+
+def test_away_scene_exposes_brb_clock_animation() -> None:
+    controller = DashboardController(FakeDeviceClient())
+
+    state, _snapshot = controller.activate("away")
+    away = next(preset for preset in state["presets"] if preset["id"] == "away")
+
+    assert away["front"]["text"] == "BRB"
+    assert away["front_animated"] is True
+    assert away["front_preview"] == "/static/animations/away_brb_clock_72x16.webp"
+    assert away["back"]["text"] == "SHORT BREAK"
+    assert away["rear_cue"] == "Pause. Reset. Return."
+
+
 def test_hacking_scene_exposes_cyberpunk_style_and_personal_cue() -> None:
     controller = DashboardController(FakeDeviceClient())
 
@@ -55,6 +79,8 @@ def test_hacking_scene_exposes_cyberpunk_style_and_personal_cue() -> None:
 
     assert hacking["front"]["text"] == "HACKING"
     assert hacking["front_style"] == "cyberpunk"
+    assert hacking["front_animated"] is True
+    assert hacking["front_preview"] == "/static/animations/hacking_fawkes_72x16.webp"
     assert hacking["rear_cue"] == "Map. Probe. Learn."
 
 
@@ -81,5 +107,7 @@ def test_daydreaming_scene_exposes_sky_style_and_personal_cue() -> None:
     assert preset["front"]["text"] == "DAYDREAMING"
     assert preset["front"]["color"] == "#69C6FF"
     assert preset["front_style"] == "daydream"
+    assert preset["front_animated"] is True
+    assert preset["front_preview"] == "/static/animations/daydreaming_72x16.webp"
     assert preset["back"]["text"] == "WANDER MODE"
     assert preset["rear_cue"] == "Let ideas drift."
