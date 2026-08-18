@@ -76,7 +76,7 @@ SCENE_PRESETS = (
     ScenePreset(
         id="wife",
         label="I love my wife",
-        description="A heartbeat sends bold positive-negative color waves across the message.",
+        description="Use when you're in trouble.",
         scene=DisplayScene.from_text(
             "I love my wife",
             "I ♥ MY WIFE",
@@ -132,6 +132,21 @@ SCENE_PRESETS = (
             DisplayAnimation("coding_72x16.anim"),
         ),
         front_preview="/static/animations/coding_72x16.webp",
+    ),
+    ScenePreset(
+        id="gaming",
+        label="Gaming",
+        description="A pixel controller powers up into a shifting arcade wordmark.",
+        scene=DisplayScene.from_text(
+            "Gaming",
+            "GAMING",
+            "PLAYER ONE",
+            "#8B5CF6",
+            "Relax. Play. Recharge.",
+            FrontStyle.STATUS,
+            DisplayAnimation("gaming_arcade_72x16.anim", stock=False),
+        ),
+        front_preview="/static/animations/gaming_arcade_72x16.webp",
     ),
     ScenePreset(
         id="hacking",

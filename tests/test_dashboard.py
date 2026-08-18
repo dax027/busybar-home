@@ -58,6 +58,19 @@ def test_coding_scene_exposes_terminal_style_and_personal_cue() -> None:
     assert coding["rear_cue"] == "Write. Run. Refine."
 
 
+def test_gaming_scene_exposes_arcade_animation_and_personal_cue() -> None:
+    controller = DashboardController(FakeDeviceClient())
+
+    state, _snapshot = controller.activate("gaming")
+    gaming = next(preset for preset in state["presets"] if preset["id"] == "gaming")
+
+    assert gaming["front"]["text"] == "GAMING"
+    assert gaming["front_animated"] is True
+    assert gaming["front_preview"] == "/static/animations/gaming_arcade_72x16.webp"
+    assert gaming["back"]["text"] == "PLAYER ONE"
+    assert gaming["rear_cue"] == "Relax. Play. Recharge."
+
+
 def test_meeting_scene_exposes_live_microphone_animation() -> None:
     controller = DashboardController(FakeDeviceClient())
 
@@ -102,6 +115,7 @@ def test_wife_scene_exposes_heartbeat_inversion_animation() -> None:
     assert wife["front"]["text"] == "I ♥ MY WIFE"
     assert wife["front_animated"] is True
     assert wife["front_preview"] == "/static/animations/love_my_wife_72x16.webp"
+    assert wife["description"] == "Use when you're in trouble."
     assert wife["back"]["text"] == "LUCKY HUSBAND"
     assert wife["rear_cue"] == "Tell her. Show her."
 
