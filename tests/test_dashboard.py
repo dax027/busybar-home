@@ -28,6 +28,34 @@ def test_focus_scene_exposes_busy_checklist_animation() -> None:
     assert focus["front_preview"] == "/static/animations/busy_checklist_v2_72x16.webp"
 
 
+def test_focused_scene_exposes_lock_animation_and_flow_cue() -> None:
+    controller = DashboardController(FakeDeviceClient())
+
+    state, _snapshot = controller.activate("focused")
+    focused = next(preset for preset in state["presets"] if preset["id"] == "focused")
+
+    assert focused["front"]["text"] == "FOCUSED"
+    assert focused["front"]["color"] == "#3FE7FF"
+    assert focused["front_animated"] is True
+    assert focused["front_preview"] == "/static/animations/focused_lock_72x16.webp"
+    assert focused["back"]["text"] == "FLOW STATE"
+    assert focused["rear_cue"] == "Hold the thread."
+
+
+def test_concentrating_scene_exposes_neural_animation_and_deep_work_cue() -> None:
+    controller = DashboardController(FakeDeviceClient())
+
+    state, _snapshot = controller.activate("concentrating")
+    concentrating = next(preset for preset in state["presets"] if preset["id"] == "concentrating")
+
+    assert concentrating["front"]["text"] == "CONCENTRATING"
+    assert concentrating["front"]["color"] == "#FFC857"
+    assert concentrating["front_animated"] is True
+    assert concentrating["front_preview"] == ("/static/animations/concentrating_neural_72x16.webp")
+    assert concentrating["back"]["text"] == "DEEP WORK"
+    assert concentrating["rear_cue"] == "Working it through."
+
+
 def test_controller_toggles_dynamic_updates_without_device_command() -> None:
     client = FakeDeviceClient()
     controller = DashboardController(client)
